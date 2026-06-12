@@ -1,0 +1,8 @@
+<Solution>
+  <Configurations>
+    <Platform Name="x64" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Project Path="../Setup1/Setup1.vdproj" Type="Installer" />
+  <Project Path="WindowsProject1.vcxproj" Id="c8f5d5c5-186a-4868-94f5-c8bbcbad4330" />
+</Solution>
