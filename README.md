@@ -3,5 +3,5 @@
 # 注意，如果要转载，请联系作者
 
 作者邮箱：272215275@qq.com
-# 下载
-https://wwatt.lanzoul.com/b01d70edvg，密码：CDC500
+# 5.0.0下载
+https://wwatt.lanzoul.com/b01d70edvg。密码：CDC500
