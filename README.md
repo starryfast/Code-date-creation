@@ -5,3 +5,5 @@
 作者邮箱：272215275@qq.com
 # 5.0.0下载
 https://wwatt.lanzoul.com/b01d70edvg。密码：CDC500
+# 加入我们
+https://gitcode.com/starryfast
