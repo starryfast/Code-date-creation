@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="default" data-page-node-id="xYsG0GL7l2hao1sUNyfhcb">
+<head data-page-node-id="wFh2QX3IWnBW85YDKMl52L">
+  <meta charset="UTF-8" data-page-node-id="amCtoEbku4A4pZ76ukmwDB" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" data-page-node-id="tzod4sOblGFMr8m4P5RLgq" />
+  <title>CDC 数据生成器 v7.1.0</title>
+  <link rel="stylesheet" href="style.css" data-page-node-id="UC6ppQJKGD30EmdZnWeX0f" />
+</head>
+<body data-page-node-id="19Dmi64BBfl1k5LMMQ8hvm">
+
+  <!-- ===== 星空背景 ===== -->
+  <canvas id="starfield" data-page-node-id="IcW2mGSjjalD23sZpYK7IY"></canvas>
+
+  <div class="app" data-page-node-id="apurJykGk5czBnERmlMiZR">
+    <!-- ============ 侧边栏 ============ -->
+    <aside class="sidebar" data-page-node-id="PP7us64UMPAowLwrIt1mhn">
+      <div class="brand" data-page-node-id="A3Cg2kQeYSWb7uFOH6CVgZ">
+        <div class="brand-logo" data-page-node-id="XaTAXNpfmxhks1ZNQze9jT">CD</div>
+        <div class="brand-text" data-page-node-id="DNzD6isCz1iPusFymnmKa6">
+          <div class="brand-title" data-page-node-id="pO6kWpEmwwp5Aqe4A1aaux">CDC 数据生成器</div>
+          <div class="brand-sub" id="brandSub" data-page-node-id="JahxOjs0o38awmu0DKJwod">UI 版 · 全功能</div>
+        </div>
+      </div>
+
+      <nav class="nav" id="nav" data-page-node-id="NNiEqvKIzkCcDto2gFcNXb">
+        <button class="nav-item active" data-page="gen" data-page-node-id="rS0wFxOUoJeD10B2jpDMUe"><span class="ico" data-page-node-id="EW2En4ybspIDqz8ntFGY3N">▦</span><span data-page-node-id="8rVh7latjISt0ctidIBIEP">数据生成</span></button>
+        <button class="nav-item" data-page="compile" data-page-node-id="dteF7trPrHXPtBhqyznX89"><span class="ico" data-page-node-id="OeEB8ZQBq7NfcV4UW40FPb">✎</span><span data-page-node-id="CiSHxnaAaPrDGoSMnnDtl5">自编译</span></button>
+        <button class="nav-item" data-page="zip" data-page-node-id="G0UnnY51CV5llHMTfwmGDt"><span class="ico" data-page-node-id="MqANTGbaa5vQ06VBYjqghl">🗜</span><span data-page-node-id="y2iVKCg1a9ghmseci3s3mC">打包工具</span></button>
+        <button class="nav-item" data-page="tools" data-page-node-id="02NHrkYEcOLdI8LjUbZUrs"><span class="ico" data-page-node-id="Vwi6FMlblCi5QmGDiKLqC8">🧰</span><span data-page-node-id="lexRmWHE0DsE5lwGJdByjH">实用工具</span></button>
+        <button class="nav-item" data-page="account" data-page-node-id="GjLjuuYHpZJY73TzHXWIDr"><span class="ico" data-page-node-id="iSemOTkf92tGMdqpIpHMyr">👤</span><span data-page-node-id="ZXtMVVvAiZfP6KtrTwEIAD">账号中心</span></button>
+        <button class="nav-item" data-page="msg" data-page-node-id="SqGwYXQZopbcOmPxAasSsf"><span class="ico" data-page-node-id="M1O33Q3eSLXrROFEyu0leC">✉</span><span data-page-node-id="0z5SciG4jeSJQlTdmrC8lH">私信</span><span class="badge" id="navUnread" style="display:none" data-page-node-id="ocY25b0Ccsusj7CWknXXvI">0</span></button>
+        <button class="nav-item" data-page="ai" data-page-node-id="H92eFRysKBLTNi1HhDcFbt"><span class="ico" data-page-node-id="wWTQYPvXYlmuvVJn5vsW1d">🤖</span><span data-page-node-id="g5hMRERAAdSeRFP1n2Rqmi">AI 助手</span></button>
+        <button class="nav-item" data-page="settings" data-page-node-id="mOPMwGyEwtESs8e4DDVG7e"><span class="ico" data-page-node-id="qma3ShfsTvDnaxXDZZ0kh4">⚙</span><span data-page-node-id="hjJ8uFrOuxLN1rTp3eQPNy">设置</span></button>
+      </nav>
+
+      <div class="sidebar-footer" data-page-node-id="DFpsHYE9XCGXW09XzhjFfY">
+        <div id="footUser" data-page-node-id="SVNe30gDrOsJX0Z0PI0AMv">未登录</div>
+        <div class="muted" id="footRole" data-page-node-id="FsDKHHROFm9CKoQslGaRTd">点击右上角登录</div>
+      </div>
+    </aside>
+
+    <!-- ============ 主区域 ============ -->
+    <main class="main" data-page-node-id="gl5UI4s7Pkz3AWcbbDU7ed">
+      <header class="topbar" data-page-node-id="SSqE5VTdK6uR1SzJME3CQ9">
+        <div class="topbar-title" id="pageTitle" data-page-node-id="zI33VqpCyu4lIl3hXQkmIr">数据生成</div>
+        <div class="topbar-right" data-page-node-id="qwr0H4nINFjEfhzzy292NW">
+          <span class="chip" id="modeChip" title="当前运行模式" data-page-node-id="cD6e95EYjRkm8WcpOMAEy2">载入中…</span>
+          <button class="icon-btn" id="btnTheme" title="切换深浅主题" data-page-node-id="RjTenpmL0weMF3wUQfvY5x">◐</button>
+          <button class="icon-btn" id="btnFrost" title="毛玻璃模式" data-page-node-id="bGGYDSjz0k16Kttq8iz3Ks">❄</button>
+          <button class="chip user-chip" id="userChip" data-page-node-id="sciKuwR44bmUBDkixaHIa0"><span class="av" id="chipAv" data-page-node-id="S3MmR1wUxSI6nbtAwhAYBT">?</span><span id="chipName" data-page-node-id="61BrtCHFAwOqPZWBUc4Cbu">未登录</span></button>
+        </div>
+      </header>
+
+      <section class="content" id="content" data-page-node-id="PbbZsJ9mFL5YNB58m8CaTO">
+
+        <!-- ========== 数据生成 ========== -->
+        <div class="page active" data-page="gen" data-page-node-id="QAA7gK9aiRJHtjIyGSfC6F">
+          <div class="tabs" data-page-node-id="1wkSv9TJxp6l389IXBxkBc">
+            <div class="tab on" data-tab="random" data-page-node-id="MpcYSMOrO924kaZiahRc0A">⚡ 随机生成</div>
+            <div class="tab" data-tab="group" data-page-node-id="Jw3t7PdtZAzKbZhqYko3Rr">🗂 分组生成</div>
+            <div class="tab" data-tab="manual" data-page-node-id="uoHSJOdxqSwbVSqjAlWINC">✍ 手动 .in</div>
+          </div>
+
+          <!-- 随机生成 -->
+          <div class="tab-page on" data-tabp="random" data-page-node-id="ifHxHn9HyvIIBJTCptd0nm">
+            <div class="card" data-page-node-id="ScfjyqH7SopH5EtAn3FNA0">
+              <h3 data-page-node-id="pz89L5ZwhQuetPLL0CtS36">生成参数</h3>
+              <div class="form-grid" data-page-node-id="ckDvo3jdCRisSeeayi0G6M">
+                <label data-page-node-id="PK2WxRHlgUdr1f0ukptJpj">起始 ID<input id="genStart" type="number" value="1" data-page-node-id="SKzCz6SUqmSbcHghrVA5c9" /></label>
+                <label data-page-node-id="KpkiqK4CNtYTpKisPAS1dN">结束 ID<input id="genEnd" type="number" value="10" data-page-node-id="r88yV0mUzmcGAhu317Al49" /></label>
+                <label data-page-node-id="tNLLsQwo5gYPzIlNNMDI47">数据类型
+                  <select id="genType" data-page-node-id="2DsppC2Fu1XM2rM6ZJSYR4">
+                    <option value="0" data-page-node-id="JEUlUaXDU24Egt3c4cgf8v">整数（随机）</option>
+                    <option value="1" data-page-node-id="VCyUtQKbvKtsKaJvuWFqB4">整数（不重复）</option>
+                    <option value="2" data-page-node-id="xqHQWHVFkp5IRgJvygUeN1">字符串（小写）</option>
+                    <option value="3" data-page-node-id="OODH8m8YrqgVHUTyNzjt2l">字符串（大写）</option>
+                    <option value="4" data-page-node-id="DortggWBq8bDennProBnVG">字符串（混合）</option>
+                    <option value="5" data-page-node-id="4wqMWO0edVuQAmxhuNDL4r">浮点数（随机）</option>
+                    <option value="6" data-page-node-id="8CPEN2Zu2VTVW2CGO7rr8z">日期时间（随机）</option>
+                  </select>
+                </label>
+                <label id="labRange1" data-page-node-id="7KFRpQBGAWNj8QSHDLxQEF">范围起 / 长度<input id="genR1" type="number" value="1" data-page-node-id="utvwRrVHAPH5IhbnbtSlAH" /></label>
+                <label id="labRange2" data-page-node-id="r7Af95LxMtXDZHXWy27KKG">范围止<input id="genR2" type="number" value="100" data-page-node-id="CUCmOuKMuJ6Hfnq0Yygcgi" /></label>
+                <label id="labStrLen" data-page-node-id="toT0qcjkVUNJrW7u8m1TJC">字符串长度<input id="genStrLen" type="number" value="8" data-page-node-id="gnZ3iXZebFBv4UyE74RD2T" /></label>
+                <label data-page-node-id="nbnkUMIMS1Zh0c1rcWMxlZ">每文件个数<input id="genCount" type="number" value="10" data-page-node-id="M9XSF0FUpBHKYOLgaoPBNI" /></label>
+                <label class="chk" data-page-node-id="JOoSAEz0gboKz8rjdZfIhp"><input id="genWriteCnt" type="checkbox" data-page-node-id="FxUYNNrifLzYsWK1a0GWhw" /> 首行写入个数</label>
+                <label class="full" data-page-node-id="GlEeOGyGZODAXrBSHjJT4d">自定义字符集<input id="genCharset" type="text" placeholder="留空用默认字符集" data-page-node-id="pyp48XUxZBpJZQq3BYB6La" /></label>
+                <label class="full" data-page-node-id="Hz46PdbcChN7q7oxyruIJW">附加变量（每文件首部，格式：变量名=值，每行一个）
+                  <textarea id="genExtra" rows="3" placeholder="n=10&#10;m=100"></textarea>
+                </label>
+                <label class="full" data-page-node-id="dNpaF4UM68Fm7cJQ85A61P">输出目录
+                  <div class="row" data-page-node-id="LFGk2PHHNRJXanr4491ils">
+                    <input id="genOutDir" type="text" placeholder="留空 = 桌面" readonly data-page-node-id="7aZAnhsDMzTGw3MaRR7NA2" />
+                    <button class="btn" id="genBrowse" data-page-node-id="RevjGFLmyrMdItuAukLYWd">浏览…</button>
+                    <button class="btn" id="genTsDir" data-page-node-id="3M23wyMrJULNxuSeMUeFxR">📁 时间戳目录</button>
+                  </div>
+                </label>
+              </div>
+            </div>
+
+            <div class="card" data-page-node-id="7HZL59fyMCj9dFpFcGtnOA">
+              <h3 data-page-node-id="AllsjCJaiuwmSkcTp738s3">操作</h3>
+              <div class="tool-row" data-page-node-id="PLQs9jAhM2JAJ74MMVD6CB">
+                <button class="btn primary" id="genRun" data-page-node-id="H2MEs0ttVdy2a2jQdpGdRs">⚡ 生成 .in 文件</button>
+                <button class="btn" id="genPreviewBtn" data-page-node-id="G2sAoHIVMgmlBHmbkPtHkG">👁 预览</button>
+                <button class="btn" id="genClear" data-page-node-id="wKh0c2sfIQH197uHFcypqw">🗑 清空已生成</button>
+                <button class="btn" id="genExportCsv" data-page-node-id="55ZnxBE5LICkUYb5bOGuuA">⬇ 导出 CSV 清单</button>
+                <button class="btn" id="genStats" data-page-node-id="7dOLEysxTKGpuLm8c5JrE5">📊 统计</button>
+                <button class="btn" id="genRename" data-page-node-id="AocYGPAV2qjVjycHetywFX">🔁 批量重命名</button>
+                <button class="btn" id="genBig" data-page-node-id="5GEJL737ASIG4XwNikbr4R">📦 生成大文件</button>
+                <button class="btn" id="genView" data-page-node-id="nhd4GlbFcXQdV1prOmYd3h">📄 查看文件</button>
+                <button class="btn" id="genChangeExt" data-page-node-id="uOMsPzUhlXBAbG3KNT8n2y">🔄 改扩展名 .txt</button>
+                <button class="btn" id="genSaveCfg" data-page-node-id="Z7m1wVdhMdwsEcgrpoA61Q">💾 保存配置</button>
+                <button class="btn" id="genLoadCfg" data-page-node-id="Pl5jru0ETCnka9Yo7pleZj">📂 加载配置</button>
+              </div>
+              <div class="gen-files" id="genFiles" data-page-node-id="Y8OFUf8CufixNvGHaGDiw2"></div>
+              <div class="preview-box" id="genPreview" style="display:none" data-page-node-id="CprcE08F2Aq1T496b5HnPz"></div>
+            </div>
+
+            <div class="card" data-page-node-id="cSR5xchKPoN8Fwv3X3hk2A">
+              <h3 data-page-node-id="Dn19q4QHwsl7Vmqff48GwF">日志</h3>
+              <pre class="log" id="genLog" data-page-node-id="q24gRsKrZXhOL2xV3k8BXy"></pre>
+            </div>
+          </div>
+
+          <!-- 分组生成 -->
+          <div class="tab-page" data-tabp="group" data-page-node-id="SEaFaEdOby4iPzBo8E9KAW">
+            <div class="card" data-page-node-id="G6vB0dVZ8eZDir60X9OQbl">
+              <h3 data-page-node-id="vqbAyd1GqLOWpNGOxile4u">分组字段配置</h3>
+              <div class="desc" data-page-node-id="Z8AkfxGaXOzXCLWHdXhrJs">每个组 = 一个 .in 文件；字段类型与「随机生成」一致（0 整数随机 / 1 整数不重复 / 2-4 字母串）。参数1：范围起或字符串长度；参数2：范围止。</div>
+              <div id="groupBox" data-page-node-id="CfR9mcf5KAXkM8lTI3IMpD"></div>
+              <div class="row" style="margin-top:14px;align-items:flex-end" data-page-node-id="AN9l0KhYS1yKb2lbnnwb2S">
+                <label data-page-node-id="Z7FuD1lgC2m2sP6kTDBUdt">生成组数<input id="grpCount" type="number" value="1" min="1" data-page-node-id="TNsVAAkfvHBA6etrmPqUT3" /></label>
+                <button class="btn primary" id="grpRun" data-page-node-id="4mzWkVjzJwdXLk9T2nrhns">⚡ 生成分组数据</button>
+                <button class="btn" id="grpAdd" data-page-node-id="uGEobH5RR1ka3xiirg2nP9">+ 添加组</button>
+                <button class="btn" id="grpSave" data-page-node-id="Qb8GHKnq2DSE4ArR9Vy8TY">💾 保存分组配置</button>
+              </div>
+            </div>
+            <div class="card" data-page-node-id="9Q33IqCmeJtCOw0tRAaY1g">
+              <h3 data-page-node-id="mv571P9eOQrLw37BuvymzE">分组日志</h3>
+              <pre class="log" id="grpLog" data-page-node-id="Wbxg8EhEncTIbhOFGEG29T"></pre>
+            </div>
+          </div>
+
+          <!-- 手动 .in -->
+          <div class="tab-page" data-tabp="manual" data-page-node-id="wc8H0DUDZH7PL4OnHgzvbP">
+            <div class="card" data-page-node-id="ZAeKMFOSLEBHgQNxdPXyBq">
+              <h3 data-page-node-id="1jjup0EOcJES9vJSBLQi5Z">编辑 .in 源文件</h3>
+              <label data-page-node-id="CB8sFzjUQsS8xNddWBP8Dl">文件名<input id="manName" type="text" placeholder="example（自动补 .in）" data-page-node-id="J29ma4oPWzXA5DZhRe6mSN" /></label>
+              <textarea id="manContent" class="editor" placeholder="在此输入 .in 文件内容…"></textarea>
+              <div class="actions" data-page-node-id="vQjKmM4lQSBqQXQQvBHsjG">
+                <button class="btn primary" id="manSave" data-page-node-id="tG35s0eOcgrdyXN5JfsgoF">💾 保存为 .in</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ========== 自编译 ========== -->
+        <div class="page" data-page="compile" data-page-node-id="zRoVXhwfAKAESSJ5XF7K2s">
+          <div class="card" data-page-node-id="gDQpkELHKbs1uV1TsfwrJg">
+            <h3 data-page-node-id="fgDkeeRBkjvVDTY8GUlrtD">C++ 编译运行</h3>
+            <div class="desc" data-page-node-id="5Gxeq9SkICFR0FK7mtmRFH">用 g++ 把 .cpp 编译为 .out 并运行（.out 运行结果写回 <code data-page-node-id="DIvsRVgvHL3pH4DL9JCUGs">.out</code> 文件，与生成器配合完成"编译 + 验证"）。</div>
+            <label data-page-node-id="4lNxxnru9gyt2yI5eHFOAH">C++ 源文件（.cpp）
+              <div class="row" data-page-node-id="RdAs9FDVuUnz2kqZTDcIfE">
+                <input id="cmpCpp" type="text" placeholder="如 D:/work/temp_ac.cpp" data-page-node-id="07QbQnJrovS2i42ftuwGn0" />
+                <button class="btn" id="cmpCppBrowse" data-page-node-id="vqP495HZvEEWaXCrefh6FP">浏览…</button>
+              </div>
+            </label>
+            <label data-page-node-id="e6KMnikKwm33bo65czFqwH">g++ 路径
+              <div class="row" data-page-node-id="qcSCh3ELEwfXiovGFpM5sS">
+                <input id="cmpGpp" type="text" placeholder="留空自动检测" data-page-node-id="vy2leni29jdODcQNlEgOkM" />
+                <button class="btn" id="cmpGppBrowse" data-page-node-id="L6pv5YhVYYif5E3n1UEb2r">浏览…</button>
+                <button class="btn" id="cmpGppAuto" data-page-node-id="3AwLizREYuYfL0MB0lt4fM">🔍 自动检测</button>
+              </div>
+            </label>
+            <div class="row" data-page-node-id="527VeT6mgVuB0AO5larJJn">
+              <label data-page-node-id="g4vGQJke45b4KC2OMJRaSx">批量：起始编号<input id="cmpStart" type="number" value="1" data-page-node-id="6ZSBDWf3FrYzFy9lZXT3v1" /></label>
+              <label data-page-node-id="Yf4L1GvEFsIEoZWzApOwj1">批量：结束编号<input id="cmpEnd" type="number" value="10" data-page-node-id="XQwr0qyUlisV3FhObSK8DZ" /></label>
+            </div>
+            <div class="tool-row" data-page-node-id="59mXTwfpQEROpebKdgoMPo">
+              <button class="btn primary" id="cmpBatch" data-page-node-id="zFFTfZqrDmFmuuOkSW6QCy">⚡ 批量编译运行（start–end）</button>
+              <button class="btn primary" id="cmpSingle" data-page-node-id="BcT64QAIHUWFkEfmRSKFXu">▶ 单文件编译运行</button>
+            </div>
+          </div>
+          <div class="card" data-page-node-id="S7VZi1tNcK8YEdqfMliSsv">
+            <h3 data-page-node-id="sssvgVOf16vIU8k6o09Ztn">编译日志</h3>
+            <pre class="log" id="cmpLog" data-page-node-id="BIOStqN6bDnPqh8nVnt2RZ"></pre>
+          </div>
+        </div>
+
+        <!-- ========== 打包工具 ========== -->
+        <div class="page" data-page="zip" data-page-node-id="fT1DwsrG8ot4zf0XHuNFem">
+          <div class="card" data-page-node-id="Oyxd32gGqxdeiqonphsqh6">
+            <h3 data-page-node-id="BSL1DBdeAo849Uug0gQoUM">打包 ZIP</h3>
+            <div class="desc" data-page-node-id="4b7LMLrNmij86d593fPKeE">把生成的测试数据（或任意目录）打包为 zip 压缩包。</div>
+            <label data-page-node-id="wk0TIyRVI2wh1Tg1RoEzjj">ZIP 文件名<input id="zipName" type="text" placeholder="archive（自动补 .zip）" data-page-node-id="8wLVkD4FHHeyVBpXPfkMPJ" /></label>
+            <label data-page-node-id="gfxbPUIhs8Nmvk11wtv6H2">源目录
+              <div class="row" data-page-node-id="bg57wMhjWq5ZElEH44Vesy">
+                <input id="zipSrc" type="text" placeholder="留空 = 上次生成目录" readonly data-page-node-id="0DRv8mEOHsyDBgJ0Mbf7BQ" />
+                <button class="btn" id="zipBrowse" data-page-node-id="ibTiDuzkijQF8EE2uFexaT">浏览…</button>
+              </div>
+            </label>
+            <div class="actions" data-page-node-id="QaDkID5PJHtV5HBgvOaP9d">
+              <button class="btn primary" id="zipRun" data-page-node-id="pOE1S0G6Qu4NRy9YqCxvqO">🗜 立即打包</button>
+            </div>
+            <pre class="log" id="zipLog" data-page-node-id="weMHHZTr2rJwjtofJUtpF5"></pre>
+          </div>
+        </div>
+
+        <!-- ========== 实用工具 ========== -->
+        <div class="page" data-page="tools" data-page-node-id="fxZtLH1yAdCgvI1s7AqpNq">
+          <div class="card" data-page-node-id="9fvlVSKxHsOuz3qZEtDGSo">
+            <h3 data-page-node-id="p20uDhzxTOqYFAu8H4DMrV">GitHub 代理加速</h3>
+            <div class="desc" data-page-node-id="fB7rkzmoY11hHcMlBgO10T">走国内镜像更快打开 GitHub / releases 下载链接。</div>
+            <label data-page-node-id="q3Ak1BFXcLR6svhmEtNe4w">GitHub 链接（留空 = 一键加速 github.com）
+              <div class="row" data-page-node-id="RhU4kDCZeCCUovjsyu2EzF">
+                <input id="ghUrl" type="text" placeholder="https://github.com/owner/repo 或 releases 链接" data-page-node-id="hXopcwwuvMYLDGrfgVT420" />
+              </div>
+            </label>
+            <label data-page-node-id="RJL1ZDXSh6HYZoP8epUKgy">代理前缀
+              <select id="ghPre" data-page-node-id="ikrAo5LOcNVtGg9Mlo4j80">
+                <option data-page-node-id="IibijBSBJC3RP5UDgqKm8G">https://ghproxy.net/</option>
+                <option data-page-node-id="jdNhmqsqHaOAN6nyC7Okeh">https://mirror.ghproxy.com/</option>
+                <option data-page-node-id="IixxBTnMlbo84PTRMo043B">https://gh.api.99988866.xyz/</option>
+              </select>
+            </label>
+            <div class="tool-row" data-page-node-id="WJIhiCyyx5PVrf0ttLdMMy">
+              <button class="btn primary" id="ghOpen" data-page-node-id="Gcm2nbzhB9rHlTrVCnxBCo">🚀 加速打开链接</button>
+              <button class="btn" id="ghHome" data-page-node-id="lP0LT6mKL0OOazzauMNARQ">一键加速 github.com</button>
+              <button class="btn" id="ghCopy" data-page-node-id="O9WdXkt0WmZHkxJw8cHtQN">📋 复制加速链接</button>
+            </div>
+          </div>
+
+          <div class="card" data-page-node-id="jxeAPBcyHgedgATwH39FXp">
+            <h3 data-page-node-id="CCDm11BSAnBtIJyPAN2cld">实用工具箱</h3>
+            <div class="desc" id="toolsDesc" data-page-node-id="HL40h203KqmY4RMDZHWNTK">系统工具在 Qt 桌面版可直接启动；网页版提供等效的在线/计算工具。</div>
+            <div class="tool-grid" id="toolGrid" data-page-node-id="3DKCyOKrhK8Fx8rmTn7ri4"></div>
+          </div>
+        </div>
+
+        <!-- ========== 账号中心 ========== -->
+        <div class="page" data-page="account" data-page-node-id="1gYTCqvFf0Zq8fYFCrSgEt">
+          <div class="card" id="accLoginCard" data-page-node-id="uMDioIGkHeFPZ3U33vCKll">
+            <h3 id="accCardTitle" data-page-node-id="YqcNOsieeahGnXN37MIXJ0">登录 / 注册</h3>
+            <div class="form-grid cols-2" data-page-node-id="TvHjwQzYbcpMFUCsPt3VQV">
+              <label data-page-node-id="Gfc2EYUBHpA9F9G3Jd0kdS">用户名<input id="accUser" type="text" placeholder="用户名" data-page-node-id="j5T0CW06TD5lwSA0eRTv3B" /></label>
+              <label data-page-node-id="5bVrNgjxAoXK7XBSpc3y09">密码<input id="accPass" type="password" placeholder="密码" data-page-node-id="BDtD4SLoojZF2qHq0hiflo" /></label>
+            </div>
+            <div class="tool-row" data-page-node-id="H4H7c9e74boxRwdcRZq7nk">
+              <button class="btn primary" id="accLogin" data-page-node-id="vR6o8sl8wtaFgarTmaqYfC">登录</button>
+              <button class="btn" id="accReg" data-page-node-id="3MJBJcIiwNaEnIw3ms8eB8">注册</button>
+            </div>
+            <pre class="log" id="accLog" data-page-node-id="yakrjBikzWJUsM7JGE53Yp"></pre>
+          </div>
+
+          <div class="card" id="accInfoCard" style="display:none" data-page-node-id="dG4UeSvoelt5MIUtFk3j4A">
+            <h3 data-page-node-id="1c3PKpEWFMwzOiWHYkCFIv">我的账号</h3>
+            <div class="kv" data-page-node-id="7Sh8bah33riGNkfFp8TSlP"><span data-page-node-id="GHsRvTd2s7qEuKfjuHghVz"><b data-page-node-id="mTqt5noC0Lmm3adwmJRXma">用户名</b></span><span id="accName" data-page-node-id="WAJCXMSwnDMtkBYlkZPN6i">-</span></div>
+            <div class="kv" data-page-node-id="r03GBJ27aEevcZEq8oCRBH"><span data-page-node-id="d0kDtYpfaaeYnU6Uy3I1wL"><b data-page-node-id="igflEzAbrLO60eXJjpGoIp">角色</b></span><span id="accRole" data-page-node-id="4ftKAkGhTfHleHjKGWVNPf">-</span></div>
+            <div class="kv" data-page-node-id="jSvQ68gFX3QZ5llVO8gES6"><span data-page-node-id="lSUEbN39bV1PCyvwvBY3iP"><b data-page-node-id="8YMnBZ3qy2PeZbx3ldlaTG">AI 剩余</b></span><span id="accQuota" data-page-node-id="dZwnKUeF7N9dbZAc33H4mE">-</span></div>
+            <div class="tool-row" data-page-node-id="N96L2rfOWBR4hpC474NEBQ">
+              <button class="btn" id="accLogout" data-page-node-id="uGWKIAjQ15BvsIqUPau3q6">退出登录</button>
+              <button class="btn" id="accRename" data-page-node-id="zLDkXlFzhNy5S6rFLzTQzA">✏ 修改用户名</button>
+              <button class="btn" id="accActivate" data-page-node-id="zE8wV54ipWfaJY0uZsE11z">🎫 输入激活码</button>
+            </div>
+          </div>
+
+          <div class="card" id="accNotifCard" style="display:none" data-page-node-id="o9yYvRCYnGc1AzzdZQ5mme">
+            <h3 data-page-node-id="MHGuDhggMb6MT7J2xOHBNK">公告通知（管理员可发布）</h3>
+            <div class="row" data-page-node-id="I7JOjqqfTUOm2ZDqphrrcG">
+              <input id="notifTitle" type="text" placeholder="标题" data-page-node-id="NZ7n1uj6NVmuESvxXmF2Oc" />
+              <input id="notifContent" type="text" placeholder="内容" data-page-node-id="ZaRtzBdOffU1XczuhCmji0" />
+              <button class="btn primary" id="notifPost" data-page-node-id="Bc0psut9CfzimgCQNS4NEQ">发布</button>
+            </div>
+            <div class="msg-list" id="notifList" style="margin-top:12px" data-page-node-id="5miaQ4NfRJV5Iz8eK5prtX"></div>
+          </div>
+
+          <div class="card" data-page-node-id="ayFQWJ5IUXiFIvs2R5nwev">
+            <h3 data-page-node-id="y2yClknF08eWGT2DZUHBrB">更新</h3>
+            <div class="tool-row" data-page-node-id="T5kk5oOrEiDB7e8WUnYy5o">
+              <button class="btn primary" id="accUpdate" data-page-node-id="8It8JaQZLJ8wgBb4q2S5nR">🔄 检查更新</button>
+            </div>
+            <div id="updBox" class="desc" data-page-node-id="YNECFHBMCn39zGX1pvAZhA"></div>
+          </div>
+        </div>
+
+        <!-- ========== 私信 ========== -->
+        <div class="page" data-page="msg" data-page-node-id="yWcbw91fW8kpFKGj4r5Cw9">
+          <div class="msg-layout" data-page-node-id="ttaHlXUSbumldc7JygfsD4">
+            <div class="card msg-contacts" data-page-node-id="6lBrNM1YmrhoMpvKvcTtGo">
+              <h3 data-page-node-id="XosHcsXaWDY5pXYSvIdZUY">联系人</h3>
+              <div class="row" style="margin-bottom:10px" data-page-node-id="XqkH8cyKuJQYS3nJc2Yiva">
+                <input id="msgSearch" type="text" placeholder="搜索 / 输入新联系人…" data-page-node-id="t5tr2Siwv1vDGZiyNTAYqM" />
+                <button class="btn" id="msgAddPeer" data-page-node-id="8c503nWj1DNa3R2Ooy7VPw">添加</button>
+              </div>
+              <div class="contact-list" id="contactList" data-page-node-id="IAOObfv47yPLQ4nf6bCUka"></div>
+            </div>
+            <div class="card msg-chat" data-page-node-id="N4RbYwOCy4F0zPIofOY4yI">
+              <h3 id="msgPeerTitle" data-page-node-id="lxJzvMISTxmDBMC81OcUHF">选择联系人开始聊天</h3>
+              <div class="chat-log" id="msgLog" data-page-node-id="PH2voOx73DHBC3GiKvjgcx"><div class="muted center" data-page-node-id="6vGWc1tcAaXkvcOAaC3mYp">请选择左侧联系人或输入用户名添加</div></div>
+              <div class="row" data-page-node-id="eFZzjhPeLEtVD8QK3CeSwk">
+                <input id="msgText" type="text" placeholder="输入消息，回车发送" data-page-node-id="B2YJaULL3RCdqBzycsFtin" />
+                <button class="btn primary" id="msgSend" data-page-node-id="wzQZEH8J7N0VXfeagH2LDJ">发送</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ========== AI 助手 ========== -->
+        <div class="page" data-page="ai" data-page-node-id="HGLEzfZqO9DxPwv2erO0dC">
+          <div class="card chat" data-page-node-id="CAxXGEWEROy9LjVVSky1Pl">
+            <div class="ai-head" data-page-node-id="c2quM4ZRxTUp1TJ2GMY26c">
+              <h3 data-page-node-id="tJ9kWGXKso1vvikAUIdYxr">AI 助手</h3>
+              <div class="tool-row" data-page-node-id="v9F3Jx9OmiCyHl0UmSDlP9">
+                <span class="chip" id="aiQuota" data-page-node-id="5y7CDwccxkt3SLy4hJh6BE">剩余 -- 次</span>
+                <span class="chip" id="aiMode" data-page-node-id="Q9hWjPUpu8Yhg5cS3FgfYY">--</span>
+                <button class="btn" id="aiClear" data-page-node-id="KXq9NoAO1aAAo4K6V1KDUz">清空对话</button>
+              </div>
+            </div>
+            <div class="chat-log" id="aiLog" data-page-node-id="iHb0ij5tHNbPvHiLFR36iJ"></div>
+            <div class="row" data-page-node-id="Wos69vy52MH5s09314YBRt">
+              <textarea id="aiInput" rows="2" placeholder="问点什么…（Markdown 回复）"></textarea>
+              <button class="btn primary" id="aiSend" data-page-node-id="zpNQoVpXti5R3HEUzsDBkS">发送</button>
+            </div>
+            <div class="desc" style="margin-top:8px" data-page-node-id="ZYQBOfBrSEcH8dzXAL5jbX">提示：在「设置 → AI 配置」填写自己的 API Key 可无限使用；否则使用服务器配额（剩余次数见上方）。</div>
+          </div>
+        </div>
+
+        <!-- ========== 设置 ========== -->
+        <div class="page" data-page="settings" data-page-node-id="8OgR05zHb1SCDcCj71tu9e">
+          <div class="card" data-page-node-id="EEh1RiRHpaX8Cn8JrEQ7XH">
+            <h3 data-page-node-id="SfTNGSelhphKOGrMrcaZpW">主题</h3>
+            <div class="theme-grid" id="themeGrid" data-page-node-id="tHj9R6Im45Jg1IA89gG6CL"></div>
+          </div>
+          <div class="grid-2" data-page-node-id="2OMAymjFvsEr9C6bG4Kmi7">
+            <div class="card" data-page-node-id="ejnraky67LfT7X4EcE7lgK">
+              <h3 data-page-node-id="gwGrqgAYIdeTNunFOfmfVt">外观</h3>
+              <label class="chk" data-page-node-id="fd3ySy51jUkdzNKgHwYNFO"><input id="setFrosted" type="checkbox" data-page-node-id="8K1DBAK0HGCfLwiTWiUUn4" /> 毛玻璃效果（内容区模糊）</label>
+              <label class="chk" data-page-node-id="LXEkAdFrKIWHSaXO4dPjEv"><input id="setBgImage" type="checkbox" data-page-node-id="c03BXKR1yzaA2hnha051nM" /> 使用背景图片（桌面版）</label>
+              <div class="tool-row" data-page-node-id="fRSlmIFvNTI5sS6W6EC9vG">
+                <button class="btn" id="setBgPick" data-page-node-id="GfZrCc3Vb6PJL8C2twdD9x">🖼 选择背景图片</button>
+                <button class="btn" id="setBgClear" data-page-node-id="p4fENoj1FYOc8DSi64ZNYK">清除背景</button>
+              </div>
+            </div>
+            <div class="card" data-page-node-id="Q3Q79FOOJGvxwe0XuSt49z">
+              <h3 data-page-node-id="uzK7HSIq71qtA3Efnja61G">编译与输出</h3>
+              <label data-page-node-id="EM0l9220728FvvjHGgCPl3">g++ 路径
+                <div class="row" data-page-node-id="EVuTJ4DhD6qgqbE4GlTaGG">
+                  <input id="setGpp" type="text" placeholder="g++.exe 路径" data-page-node-id="JySxDU2MECxGCAHJYMqC3i" />
+                  <button class="btn" id="setGppBrowse" data-page-node-id="cWU5e1CsGiLrRvjhoB8N2w">浏览…</button>
+                  <button class="btn" id="setGppAuto" data-page-node-id="ww4HCEKcfmh14Qi4oW59WC">自动检测</button>
+                </div>
+              </label>
+              <label data-page-node-id="dmAoXZx29YwOfb8S9cAnHd">输出目录
+                <div class="row" data-page-node-id="YMcyZ3SOya9wbgCtYR5d8L">
+                  <input id="setOutDir" type="text" readonly data-page-node-id="wL1g6EsgvzMFxIXCNGmULX" />
+                  <button class="btn" id="setOutDirBrowse" data-page-node-id="U1NLY85jEOJG6jreytCgUg">浏览…</button>
+                </div>
+              </label>
+            </div>
+          </div>
+          <div class="card" data-page-node-id="G1tAdmyICqiIUNSIqOucHN">
+            <h3 data-page-node-id="IRIKCesf22kDaRuDeFbo3j">云端服务器与 AI 配置</h3>
+            <div class="desc" data-page-node-id="yRN2YxYfThKkCQ5JRTTkMS">与桌面版共用 <code data-page-node-id="FwopsinfLfjpJUCGGEl0k5">cdc_cloud.cfg</code>（exe 同目录）的服务器地址时自动走云端账号/私信/AI 配额；网页版可在此填写。留空则使用本地数据（浏览器 localStorage）。</div>
+            <label data-page-node-id="nuaDfchfnQqPiyhquOJq66">云端服务器地址
+              <div class="row" data-page-node-id="ltsmGEpvuawVvYkbGoat7r">
+                <input id="setServer" type="text" placeholder="https://cdc.mjhcsp.xyz" data-page-node-id="0prV0Tp3Fa0y6967s6g3I4" />
+                <button class="btn" id="setServerSave" data-page-node-id="eMpEFmcicsZwRMBhp3nI3Z">保存</button>
+              </div>
+            </label>
+            <label data-page-node-id="eBfrAZT06QDsCfqqUy2D6z">AI API Key（自备 Key 直连，免配额）
+              <input id="setAiKey" type="password" placeholder="sk-…（留空 = 走服务器配额）" data-page-node-id="gggjXEIpb4jhW49FAgSe3a" />
+            </label>
+            <div class="row" data-page-node-id="k3Dluz6G4JM3cZACPzuzaF">
+              <label data-page-node-id="3Y6IKQh8thhWgzRzDCWOwX">模型<input id="setAiModel" type="text" placeholder="qwen-plus" data-page-node-id="rLDiswbNQo26xX3thqT6fc" /></label>
+              <label data-page-node-id="5cKBavgeUCVz7SGwmPjgG5">接口地址<input id="setAiBase" type="text" placeholder="https://dashscope.aliyuncs.com/compatible-mode/v1" data-page-node-id="02rQQ2H25yhjE9qhgUXI8i" /></label>
+            </div>
+            <div class="tool-row" data-page-node-id="CT3ROJhKzj9fnmoybHthCW">
+              <button class="btn primary" id="setAiSave" data-page-node-id="8bvQ1rBXLODJcYkvVmFvuw">保存 AI 配置</button>
+              <button class="btn" id="setCfgReset" data-page-node-id="sW4jjNs9Y9xjOfRvpfMCm8">恢复默认</button>
+            </div>
+          </div>
+          <div class="card" data-page-node-id="WPiUarp2HtTJAEllGXqGO8">
+            <h3 data-page-node-id="e22vQzkbVhf9190T1RkbYS">关于</h3>
+            <div class="kv" data-page-node-id="6RU0YI7jRoVUYQ2TohYtoH"><span data-page-node-id="jYuvSDRvcxRDpzay3zbcNW"><b data-page-node-id="WzrWRGK0U7TFUaj7PJlc5F">版本</b></span><span data-page-node-id="z5jvAOiuDTXGljFE99wT9C">v7.1.0</span></div>
+            <div class="kv" data-page-node-id="Y02Dy8xbA1X6qA9h21QtLt"><span data-page-node-id="zEqWCGRKCx966S7jsZnxyC"><b data-page-node-id="8YNAFVUJsSaxkVaxoioo07">界面</b></span><span data-page-node-id="bvCq8PmFwqxLhJj8LbhxYw">HTML / CSS / JS（可独立网页运行或 Qt 桌面运行）</span></div>
+            <div class="kv" data-page-node-id="yscjPpb2ypBBAArRvPxAxn"><span data-page-node-id="sq6tMrEBigd2r8BwtVXIST"><b data-page-node-id="71XbPMJvDttCv79GMEDj3x">后端</b></span><span id="aboutBackend" data-page-node-id="8Y4xH0tSZD36fqSA4iwI0z">Web 模式（localStorage + 云端 API）</span></div>
+            <div class="kv" data-page-node-id="s35MK0UppCQ1frFilvTnqc"><span data-page-node-id="fqlFFKnA4XpA4fzExHyfM6"><b data-page-node-id="joayhOZaJ1ITGHwp4Nd3F1">运行模式</b></span><span id="aboutMode" data-page-node-id="6LzHXc8BwAkHRYyfKvFCAg">-</span></div>
+            <div class="tool-row" data-page-node-id="8ODf6aCt4pz63WljXwpfhn">
+              <button class="btn" id="btnAbout" data-page-node-id="7qtZty6iUUQyvqnJ8ugCqv">关于作者</button>
+            </div>
+          </div>
+        </div>
+
+      </section>
+    </main>
+  </div>
+
+  <!-- ============ 登录遮罩 ============ -->
+  <div class="overlay" id="overlay" data-page-node-id="k5iDLuBxqGWmvPtFPR8PMG">
+    <div class="auth" data-page-node-id="JdTQDynulF093FPkGa6QmP">
+      <div class="head" data-page-node-id="oMyY5rjGDZy7tIGxHyhKEo">
+        <div class="brand-logo" data-page-node-id="cDVGc97M5LOPPIxJS4d7J9">CD</div>
+        <h2 data-page-node-id="0T59NpHzSnT5pSwxnUlspr">CDC 数据生成器</h2>
+        <p data-page-node-id="GSoOtzjBUTWh8wGbk1IZOr">登录以同步账号、私信与 AI 配额</p>
+      </div>
+      <div class="tabs" data-page-node-id="cXJdgNCvzwMkpXuQ1Dpfls"><div class="tab on" id="tabLogin" data-page-node-id="6Lm4WPKRPdlCW6PEN3hszo">登录</div><div class="tab" id="tabReg" data-page-node-id="BNsUlX0QOGu7b9Bz90nCTo">注册</div></div>
+      <div class="field" data-page-node-id="AhvqTUGHelQCyukmS7CZ4k"><label data-page-node-id="UYzC4HIedVofr316Mv7BTx">用户名</label><input class="input" id="authUser" placeholder="用户名" data-page-node-id="epm7LOiNkQmEJGAvDZ83ED" /></div>
+      <div class="field" data-page-node-id="IwmiXGxKSmzJovwddPbYxR"><label data-page-node-id="yrD9aZL6nVhPAK1c2lcQQS">密码</label><input class="input" id="authPass" type="password" placeholder="密码" data-page-node-id="V1A7hrZXLvcdpsxfjuqHfE" /></div>
+      <button class="btn primary btn-lg" id="btnAuth" data-page-node-id="C6hDLzhLiFNQtYwxtK7YkJ">登录</button>
+      <div class="hint" id="authHint" data-page-node-id="MHPucj77Fbn7bNGO5pXYeS"></div>
+      <div class="hint" data-page-node-id="tKNAck5V2PWGwyxo7LvS6S"><a href="javascript:void(0)" id="authSkip" data-page-node-id="ZygKrF5t28odZwjuN53z6L">先逛逛，稍后登录</a></div>
+    </div>
+  </div>
+
+  <!-- ============ 通用弹窗 ============ -->
+  <div class="modal" id="modal" data-page-node-id="3TmaJVCjdWaVki88iB4Ta8">
+    <div class="modal-box" data-page-node-id="4wfQ4M11XG3MQSCdSaTneI">
+      <div class="modal-head" data-page-node-id="pyb3vvpcGodChD0iIx5HM3"><span id="modalTitle" data-page-node-id="WraED6WEqLoITNfJFwiJY9">结果</span><button class="x" id="modalClose" data-page-node-id="CT60vULgpOxrpEBwwqPrHn">×</button></div>
+      <div class="modal-body" id="modalBody" data-page-node-id="CTDYX00skj1Qe3LgxrjLdN"></div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast" data-page-node-id="JChBGIX2Ewlm5GbLexlGNA"></div>
+
+  <script src="app.js"></script>
+
+  <!-- ============ 星空背景 + 子标签切换 ============ -->
+  <script>
+  (function () {
+    'use strict';
+
+    /* ---------- 1. 星空粒子背景 ---------- */
+    var canvas = document.getElementById('starfield');
+    if (canvas) {
+      var ctx = canvas.getContext('2d');
+      var w = 0, h = 0, stars = [];
+      var STAR_COUNT = 220, MAX_SPEED = 0.32;
+
+      function resize() {
+        w = canvas.width = window.innerWidth;
+        h = canvas.height = window.innerHeight;
+      }
+      window.addEventListener('resize', resize);
+      resize();
+
+      function Star() {
+        this.x = Math.random() * w;
+        this.y = Math.random() * h;
+        this.size = Math.random() * 2.1 + 0.5;
+        this.sx = (Math.random() - 0.5) * MAX_SPEED * 1.2;
+        this.sy = (Math.random() - 0.5) * MAX_SPEED * 1.2;
+        this.op = Math.random() * 0.65 + 0.3;
+        this.tw = Math.random() * Math.PI * 2;
+        this.tws = 0.008 + Math.random() * 0.018;
+      }
+      Star.prototype.update = function () {
+        this.x += this.sx; this.y += this.sy; this.tw += this.tws;
+        if (this.x < 0) this.x = w; else if (this.x > w) this.x = 0;
+        if (this.y < 0) this.y = h; else if (this.y > h) this.y = 0;
+      };
+      Star.prototype.draw = function () {
+        var a = this.op * (0.65 + 0.35 * Math.sin(this.tw));
+        var tint = this.size > 1.8 ? '168,192,255' : '220,235,255';
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(' + tint + ',' + a + ')';
+        ctx.fill();
+        if (this.size > 1.9) {
+          ctx.shadowColor = 'rgba(168,192,255,.5)';
+          ctx.shadowBlur = 6;
+          ctx.fill();
+          ctx.shadowBlur = 0;
+        }
+      };
+
+      for (var i = 0; i < STAR_COUNT; i++) stars.push(new Star());
+
+      (function loop() {
+        if (!w || !h) { resize(); }
+        ctx.clearRect(0, 0, w, h);
+        for (var j = 0; j < stars.length; j++) { stars[j].update(); stars[j].draw(); }
+        requestAnimationFrame(loop);
+      })();
+    }
+
+    /* ---------- 2. 数据生成页：三个子标签切换 ---------- */
+    // 原 app.js 未绑定该事件，导致「分组生成」「手动 .in」点了没反应
+    var tabs = document.querySelectorAll('.page[data-page="gen"] > .tabs > .tab[data-tab]');
+    var panes = document.querySelectorAll('.page[data-page="gen"] > .tab-page[data-tabp]');
+
+    function switchTab(name) {
+      Array.prototype.forEach.call(tabs, function (t) {
+        t.classList.toggle('on', t.getAttribute('data-tab') === name);
+      });
+      Array.prototype.forEach.call(panes, function (p) {
+        p.classList.toggle('on', p.getAttribute('data-tabp') === name);
+      });
+    }
+
+    Array.prototype.forEach.call(tabs, function (t) {
+      t.addEventListener('click', function () {
+        switchTab(t.getAttribute('data-tab'));
+      });
+    });
+
+    console.log('✨ CDC 星空前端已启动');
+  })();
+  </script>
+
+</body>
+</html>

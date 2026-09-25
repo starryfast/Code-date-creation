@@ -1,0 +1,13 @@
+// CDC DataGen v7.1.0 — 资源定义（应用图标 + 内嵌前端）
+// 编译：windres cdc.rc -O coff -o cdc_res.o
+#include "winver.h"
+
+// 应用图标（资源管理器 / 任务栏显示）
+IDI_APP ICON "icon.ico"
+
+// 内嵌前端：编译进 exe，运行时不再依赖磁盘上的 html/js
+// 对应 cdc_backend.cpp 中 ReadRes("IDR_INDEX") / ReadRes("IDR_BRIDGE")
+IDR_INDEX  RCDATA "index.html"
+IDR_BRIDGE RCDATA "cpp_bridge.js"
+// 若以后加入独立 css，取消下一行注释并确保 app.css 存在
+// IDR_CSS   RCDATA "app.css"
