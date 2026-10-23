@@ -1,0 +1,72 @@
+========================================================================
+ NOTICE —— 第三方组件署名
+ CDC 测试数据生成器（Code date creation）
+========================================================================
+
+本产品包含以下第三方开源组件。各组件的版权归其各自作者所有，
+均以 MIT 许可分发；本产品整体以 GNU GPL v3 分发（两者兼容）。
+
+------------------------------------------------------------------------
+1. markdown-it  14.1.0
+------------------------------------------------------------------------
+   用途    Markdown → HTML 解析（AI 回答渲染）
+   仓库    https://github.com/markdown-it/markdown-it
+   版权    Copyright (c) 2014 Vitaly Puzrin, Alex Kocharin
+   许可    MIT
+   文件    md/vendor/markdown-it.min.js
+
+------------------------------------------------------------------------
+2. KaTeX  0.16.22
+------------------------------------------------------------------------
+   用途    LaTeX 数学公式渲染（含 20 个 woff2 字体文件）
+   仓库    https://github.com/KaTeX/KaTeX
+   版权    Copyright (c) 2013-2020 Khan Academy and other contributors
+   许可    MIT
+   文件    md/vendor/katex.min.js
+           md/vendor/katex.min.css
+           md/vendor/fonts/*.woff2
+
+------------------------------------------------------------------------
+3. markdown-it-texmath  1.0.0
+------------------------------------------------------------------------
+   用途    把 $...$ / $$...$$ 公式片段接给 KaTeX
+   仓库    https://github.com/goessner/markdown-it-texmath
+   版权    Copyright (c) 2017 Stefan Goessner
+   许可    MIT
+   文件    md/vendor/texmath.min.js
+
+注：上述文件经 jsDelivr 分发（https://cdn.jsdelivr.net/npm），
+    texmath.min.js 由 jsDelivr 使用 Terser 压缩。
+    各文件头部保留的许可注释为原始署名，未作修改。
+    下载与版本锁定脚本见 md/fetch_vendor.py。
+
+------------------------------------------------------------------------
+ MIT 许可全文（适用于上述全部组件）
+------------------------------------------------------------------------
+MIT License
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+------------------------------------------------------------------------
+ 其他
+------------------------------------------------------------------------
+- cdc_lib/cdcscq.hpp（CDCSCQ v2.0）为本项目自研库，不含第三方代码，
+  以 GNU GPL v3 分发。
+- Windows 平台库（ws2_32 / winhttp / comdlg32 / ole32 / shell32 /
+  advapi32 / user32）为操作系统的系统库，不随本仓库分发。

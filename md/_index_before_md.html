@@ -1,0 +1,3988 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="default">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CDC 数据生成器 v7.1.0</title>
+  <style>
+/* =============================================================
+   CDC 数据生成器 v7.1.0 — 星云主题（重制版）
+   视觉参考：Code date creation 官网
+   注意：app.js 依赖的 class 名全部保留，请勿重命名
+   ============================================================= */
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --bg:            #080c1a;
+  --bg2:           #0c1228;
+  --panel:         #0f1530;
+  --panel-2:       #141b3a;
+
+  --card:          rgba(19, 26, 52, 0.72);
+  --card-2:        rgba(26, 34, 66, 0.80);
+  --card-solid:    #131a36;
+
+  --text:          #eef1fa;
+  --text-dim:      #cdd5ea;
+  --muted:         #8d96b8;
+
+  --accent:        #8ab4ff;   /* 亮蓝 */
+  --accent2:       #7c5cff;   /* 紫 */
+  --accent3:       #5a45c9;   /* 深紫 */
+  --accent-mid:    #6d5bd0;
+  --accent-soft:   rgba(138, 180, 255, 0.14);
+
+  --line:          rgba(255, 255, 255, 0.08);
+  --line-strong:   rgba(138, 180, 255, 0.35);
+
+  --ok:   #4ade80;
+  --warn: #fbbf24;
+  --err:  #f87171;
+
+  --r-sm: 12px;
+  --r-md: 18px;
+  --r-lg: 24px;
+  --r-pill: 999px;
+
+  --shadow-card: 0 18px 50px rgba(2, 4, 12, 0.55);
+  --shadow-btn:  0 6px 20px rgba(8, 10, 26, 0.5);
+  --shadow-glow: 0 10px 34px rgba(109, 91, 208, 0.45);
+
+  --sidebar-w: 244px;
+}
+
+/* ===== 8 套主题：星空底不变，只换强调色系 ===== */
+[data-theme="default"] { --accent:#8ab4ff; --accent2:#7c5cff; --accent3:#5a45c9; --accent-mid:#6d5bd0; --accent-soft:rgba(138,180,255,.14); }
+[data-theme="dark"]    { --accent:#9aa7c7; --accent2:#5c6b8f; --accent3:#3a455f; --accent-mid:#4a5162; --accent-soft:rgba(154,167,199,.13); }
+[data-theme="green"]   { --accent:#6ee7a8; --accent2:#2e9e5b; --accent3:#12503a; --accent-mid:#34b36e; --accent-soft:rgba(110,231,168,.14); }
+[data-theme="cream"]   { --accent:#f2cf8f; --accent2:#c9913f; --accent3:#6b4a1c; --accent-mid:#d9a84e; --accent-soft:rgba(242,207,143,.14); }
+[data-theme="blue"]    { --accent:#6fa8ff; --accent2:#1f6fff; --accent3:#123a8f; --accent-mid:#3d7eff; --accent-soft:rgba(111,168,255,.15); }
+[data-theme="pink"]    { --accent:#ffb0d4; --accent2:#e8659b; --accent3:#7d2149; --accent-mid:#ee7ab0; --accent-soft:rgba(255,176,212,.14); }
+[data-theme="gold"]    { --accent:#eecf6a; --accent2:#d4af37; --accent3:#6b5410; --accent-mid:#dfb63e; --accent-soft:rgba(238,207,106,.14); }
+[data-theme="grey"]    { --accent:#c9d2e2; --accent2:#7a8696; --accent3:#3c4552; --accent-mid:#8a96a8; --accent-soft:rgba(201,210,226,.13); }
+
+html, body { height: 100%; }
+
+body {
+  font-family: 'Segoe UI', 'PingFang SC', 'Microsoft YaHei UI', Roboto, 'Helvetica Neue', sans-serif;
+  background: radial-gradient(1200px 800px at 85% -10%, rgba(63, 43, 150, .28), transparent 60%),
+              radial-gradient(1000px 700px at -10% 110%, rgba(138, 180, 255, .14), transparent 60%),
+              linear-gradient(160deg, var(--bg) 0%, var(--bg2) 55%, #060913 100%);
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
+  font-size: 14px;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ===== 星空画布（固定最底层） ===== */
+#starfield {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* ===== 布局骨架 ===== */
+.app {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  min-height: 100vh;
+}
+
+/* ===== 侧边栏 ===== */
+.sidebar {
+  width: var(--sidebar-w);
+  flex: 0 0 var(--sidebar-w);
+  display: flex;
+  flex-direction: column;
+  padding: 26px 16px 20px;
+  background: linear-gradient(180deg, rgba(13, 18, 40, .88), rgba(8, 11, 26, .92));
+  border-right: 1px solid var(--line);
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+
+@supports not (backdrop-filter: blur(1px)) {
+  .sidebar, .card, .topbar, .auth, .modal-box, .toast {
+    background: var(--panel) !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  padding: 4px 8px 24px;
+}
+
+.brand-logo {
+  width: 46px;
+  height: 46px;
+  flex: 0 0 46px;
+  border-radius: 14px;
+  display: grid;
+  place-items: center;
+  font-weight: 800;
+  font-size: 16px;
+  letter-spacing: .5px;
+  color: #fff;
+  background: linear-gradient(135deg, var(--accent3), var(--accent2), var(--accent));
+  box-shadow: 0 8px 24px rgba(90, 69, 201, .5);
+}
+
+.brand-text { min-width: 0; }
+
+.brand-title {
+  font-size: 15.5px;
+  font-weight: 700;
+  letter-spacing: .4px;
+  background: linear-gradient(135deg, var(--accent), var(--accent2), #c9b8ff);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  white-space: nowrap;
+}
+
+.brand-sub {
+  font-size: 11px;
+  color: var(--muted);
+  margin-top: 4px;
+  letter-spacing: 2px;
+  white-space: nowrap;
+}
+
+/* ===== 侧边栏导航 ===== */
+.nav {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  flex: 1;
+  overflow-y: auto;
+  padding-right: 2px;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  border: 1px solid transparent;
+  border-radius: var(--r-pill);
+  background: transparent;
+  color: var(--text-dim);
+  font-size: 13.5px;
+  font-family: inherit;
+  cursor: pointer;
+  text-align: left;
+  transition: all .22s ease;
+  position: relative;
+  white-space: nowrap;
+}
+
+.nav-item .ico {
+  width: 22px;
+  text-align: center;
+  font-size: 15px;
+  flex: 0 0 22px;
+  opacity: .92;
+}
+
+.nav-item:hover {
+  background: rgba(255, 255, 255, .07);
+  color: #fff;
+  transform: translateX(3px);
+}
+
+.nav-item.active {
+  background: linear-gradient(135deg, rgba(90, 69, 201, .65), rgba(138, 180, 255, .18));
+  border-color: var(--accent-mid);
+  color: #fff;
+  font-weight: 600;
+  box-shadow: 0 6px 22px rgba(90, 69, 201, .35);
+}
+
+.nav-item.active::before {
+  content: '';
+  position: absolute;
+  left: 3px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 4px;
+  height: 22px;
+  border-radius: 4px;
+  background: linear-gradient(180deg, var(--accent), var(--accent2));
+  box-shadow: 0 0 12px var(--accent);
+}
+
+.nav-item .badge {
+  margin-left: auto;
+  background: var(--accent-mid);
+  color: #fff;
+  border-radius: var(--r-pill);
+  padding: 1px 8px;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.sidebar-footer {
+  padding: 15px 12px 2px;
+  border-top: 1px solid var(--line);
+  font-size: 12px;
+  color: var(--text-dim);
+  line-height: 1.8;
+}
+
+/* ===== 主区域 ===== */
+.main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+
+.topbar {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 20px 32px;
+  border-bottom: 1px solid var(--line);
+  background: rgba(8, 12, 26, .55);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  position: sticky;
+  top: 0;
+  z-index: 20;
+}
+
+.topbar-title {
+  font-size: 23px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  background: linear-gradient(135deg, var(--accent), var(--accent2), #d4bfff);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.topbar-right {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 7px 16px;
+  border-radius: var(--r-pill);
+  background: rgba(255, 255, 255, .06);
+  border: 1px solid var(--line);
+  color: var(--text-dim);
+  font-size: 12px;
+  font-family: inherit;
+  cursor: default;
+  white-space: nowrap;
+}
+
+.icon-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: rgba(255, 255, 255, .06);
+  border: 1px solid var(--line);
+  color: var(--text-dim);
+  font-size: 15px;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all .2s ease;
+}
+
+.icon-btn:hover {
+  background: rgba(255, 255, 255, .14);
+  border-color: var(--line-strong);
+  transform: translateY(-2px);
+  color: #fff;
+}
+
+.user-chip { cursor: pointer; }
+.user-chip:hover { border-color: var(--line-strong); }
+
+.user-chip .av {
+  width: 21px;
+  height: 21px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: linear-gradient(135deg, var(--accent3), var(--accent));
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+/* ===== 内容区 ===== */
+.content {
+  flex: 1;
+  padding: 30px 34px 56px;
+  max-width: 1280px;
+  width: 100%;
+}
+
+.page { display: none; }
+.page.active { display: block; animation: fadeSlide .42s cubic-bezier(.22,.9,.3,1) both; }
+
+@keyframes fadeSlide {
+  from { opacity: 0; transform: translateY(18px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ===== 卡片 ===== */
+.card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  padding: 26px 30px;
+  margin-bottom: 22px;
+  box-shadow: var(--shadow-card);
+  transition: border-color .25s, transform .25s, box-shadow .25s;
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+
+.card:hover {
+  border-color: rgba(255, 255, 255, .14);
+  box-shadow: 0 22px 60px rgba(2, 4, 12, .65);
+}
+
+.card h3 {
+  font-size: 16.5px;
+  font-weight: 700;
+  margin-bottom: 16px;
+  color: var(--text);
+  letter-spacing: .5px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.card h3::before {
+  content: '';
+  width: 4px;
+  height: 16px;
+  border-radius: 4px;
+  background: linear-gradient(180deg, var(--accent), var(--accent2));
+  box-shadow: 0 0 8px var(--accent);
+}
+
+.desc {
+  color: var(--muted);
+  font-size: 12.5px;
+  line-height: 1.8;
+  margin-bottom: 15px;
+}
+
+.desc code, .card code {
+  background: var(--accent-soft);
+  padding: 2px 7px;
+  border-radius: 6px;
+  font-family: Consolas, 'Courier New', monospace;
+  font-size: 12px;
+  color: var(--accent);
+}
+
+/* ===== 内置函数库面板 ===== */
+.tag {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .5px;
+  padding: 2px 9px;
+  border-radius: 999px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  vertical-align: middle;
+}
+
+.lib-group {
+  border: 1px solid var(--line, rgba(255,255,255,.08));
+  border-radius: 10px;
+  padding: 10px 14px;
+  margin-bottom: 9px;
+  background: rgba(127,127,127,.05);
+}
+
+.lib-group h4 {
+  margin: 0 0 6px;
+  font-size: 13px;
+  color: var(--accent);
+}
+
+.lib-group ul {
+  margin: 0;
+  padding-left: 18px;
+}
+
+.lib-group li {
+  font-size: 12px;
+  color: var(--muted);
+  line-height: 1.85;
+  font-family: Consolas, 'Courier New', monospace;
+}
+
+/* ===== 子标签 ===== */
+.tabs {
+  display: flex;
+  gap: 9px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.tab {
+  padding: 9px 22px;
+  border-radius: var(--r-pill);
+  background: rgba(255, 255, 255, .05);
+  border: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 13px;
+  cursor: pointer;
+  transition: all .22s ease;
+  user-select: none;
+  font-family: inherit;
+}
+
+.tab:hover { background: rgba(255, 255, 255, .11); color: var(--text); }
+
+.tab.on {
+  background: linear-gradient(135deg, rgba(90, 69, 201, .7), rgba(138, 180, 255, .2));
+  border-color: var(--accent-mid);
+  color: #fff;
+  font-weight: 600;
+  box-shadow: 0 5px 20px rgba(90, 69, 201, .35);
+}
+
+.tab-page { display: none; }
+.tab-page.on { display: block; animation: fadeSlide .38s cubic-bezier(.22,.9,.3,1) both; }
+
+/* ===== 表单 ===== */
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(215px, 1fr));
+  gap: 16px;
+}
+
+.form-grid.cols-2 { grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); }
+.form-grid .full, .form-grid label.full { grid-column: 1 / -1; }
+
+label {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 12.5px;
+  color: var(--muted);
+  font-weight: 500;
+}
+
+label.chk, .chk {
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  color: var(--text-dim);
+  font-size: 13px;
+}
+
+input[type="text"],
+input[type="number"],
+input[type="password"],
+select,
+textarea {
+  width: 100%;
+  padding: 11px 15px;
+  border-radius: var(--r-sm);
+  background: rgba(255, 255, 255, .055);
+  border: 1px solid var(--line);
+  color: var(--text);
+  font-size: 13.5px;
+  font-family: inherit;
+  transition: all .2s ease;
+  outline: none;
+}
+
+input:hover, select:hover, textarea:hover { border-color: rgba(255, 255, 255, .18); }
+
+input:focus, select:focus, textarea:focus {
+  border-color: var(--accent-mid);
+  background: rgba(255, 255, 255, .085);
+  box-shadow: 0 0 0 3px var(--accent-soft), 0 0 16px rgba(109, 91, 208, .18);
+}
+
+input::placeholder, textarea::placeholder { color: #5d6784; }
+
+select {
+  cursor: pointer;
+  appearance: none;
+  background-image: linear-gradient(45deg, transparent 50%, var(--muted) 50%),
+                    linear-gradient(135deg, var(--muted) 50%, transparent 50%);
+  background-position: calc(100% - 18px) 50%, calc(100% - 13px) 50%;
+  background-size: 5px 5px, 5px 5px;
+  background-repeat: no-repeat;
+  padding-right: 36px;
+}
+
+select option { background: var(--card-solid); color: var(--text); }
+
+input[type="checkbox"] {
+  width: 17px;
+  height: 17px;
+  accent-color: var(--accent-mid);
+  cursor: pointer;
+  flex: 0 0 17px;
+}
+
+textarea { resize: vertical; line-height: 1.7; min-height: 70px; }
+
+.editor {
+  min-height: 250px;
+  font-family: Consolas, 'Courier New', monospace;
+  font-size: 13px;
+  line-height: 1.7;
+}
+
+/* ===== 行 / 按钮组 ===== */
+.row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.row > input { flex: 1; min-width: 140px; }
+.actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 18px; }
+.tool-row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 16px; align-items: center; }
+
+/* ===== 按钮：胶囊 + 渐变 ===== */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 10px 24px;
+  border-radius: var(--r-pill);
+  background: rgba(255, 255, 255, .07);
+  border: 1px solid var(--line);
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  letter-spacing: .3px;
+  box-shadow: var(--shadow-btn);
+  transition: all .22s ease;
+  user-select: none;
+  white-space: nowrap;
+}
+
+.btn:hover {
+  background: rgba(255, 255, 255, .14);
+  border-color: var(--line-strong);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-glow);
+}
+
+.btn:active { transform: scale(.96); }
+
+.btn.primary {
+  background: linear-gradient(135deg, var(--accent3), var(--accent2), var(--accent));
+  border: none;
+  color: #fff;
+  box-shadow: 0 6px 22px rgba(90, 69, 201, .4);
+}
+
+.btn.primary:hover {
+  filter: brightness(1.12);
+  transform: translateY(-2px);
+  box-shadow: 0 10px 34px rgba(90, 69, 201, .55);
+}
+
+.btn-lg { padding: 13px 32px; font-size: 14.5px; }
+
+/* ===== 日志 ===== */
+.log {
+  background: rgba(3, 5, 12, .5);
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  padding: 15px 17px;
+  font-family: Consolas, 'Courier New', monospace;
+  font-size: 12.5px;
+  line-height: 1.8;
+  color: #bfcaf0;
+  max-height: 260px;
+  overflow-y: auto;
+  white-space: pre-wrap;
+  word-break: break-all;
+  margin-top: 15px;
+}
+
+/* ===== 生成结果 / 预览 ===== */
+.gen-files { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+
+.gen-files .file {
+  padding: 6px 14px;
+  border-radius: var(--r-pill);
+  background: var(--accent-soft);
+  border: 1px solid var(--line-strong);
+  font-size: 12px;
+  color: var(--accent);
+  font-family: Consolas, monospace;
+}
+
+.preview-box {
+  margin-top: 16px;
+  padding: 16px 18px;
+  border-radius: var(--r-md);
+  background: rgba(3, 5, 12, .5);
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--accent-mid);
+  font-family: Consolas, monospace;
+  font-size: 12.5px;
+  line-height: 1.8;
+  color: #c9d6f2;
+  white-space: pre-wrap;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+/* ===== 分组生成 ===== */
+.group-card {
+  background: rgba(255, 255, 255, .045);
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  padding: 16px 18px;
+  margin-bottom: 14px;
+}
+
+.group-card .g-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+  font-weight: 600;
+  font-size: 13.5px;
+  color: var(--accent);
+}
+
+.group-card .field-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr auto;
+  gap: 10px;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.group-card .field-row input,
+.group-card .field-row select { padding: 8px 12px; font-size: 12.5px; }
+
+/* ===== 工具网格 ===== */
+.tool-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(155px, 1fr));
+  gap: 12px;
+  margin-top: 15px;
+}
+
+.tool-btn {
+  padding: 15px 13px;
+  border-radius: var(--r-md);
+  background: rgba(255, 255, 255, .055);
+  border: 1px solid var(--line);
+  color: var(--text-dim);
+  font-size: 13px;
+  font-family: inherit;
+  cursor: pointer;
+  text-align: center;
+  transition: all .22s ease;
+}
+
+.tool-btn:hover {
+  background: rgba(255, 255, 255, .13);
+  border-color: var(--line-strong);
+  transform: translateY(-3px);
+  color: #fff;
+  box-shadow: var(--shadow-glow);
+}
+
+/* ===== 主题网格 ===== */
+.theme-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(136px, 1fr));
+  gap: 12px;
+}
+
+.theme-chip {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 15px;
+  border-radius: var(--r-md);
+  background: rgba(255, 255, 255, .055);
+  border: 1px solid var(--line);
+  cursor: pointer;
+  font-size: 13px;
+  color: var(--text-dim);
+  transition: all .22s ease;
+}
+
+.theme-chip:hover { background: rgba(255, 255, 255, .12); transform: translateY(-2px); }
+
+.theme-chip.active {
+  border-color: var(--accent-mid);
+  background: var(--accent-soft);
+  color: #fff;
+  font-weight: 600;
+  box-shadow: 0 6px 22px rgba(90, 69, 201, .35);
+}
+
+.theme-swatch {
+  width: 27px;
+  height: 27px;
+  border-radius: 9px;
+  flex: 0 0 27px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, .45);
+}
+
+/* ===== 双列 ===== */
+.grid-2 {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(330px, 1fr));
+  gap: 22px;
+}
+
+/* ===== 键值行 ===== */
+.kv {
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 11px 0;
+  border-bottom: 1px solid var(--line);
+  font-size: 13.5px;
+  color: var(--text-dim);
+}
+
+.kv:last-child { border-bottom: none; }
+.kv b { color: var(--muted); font-weight: 500; }
+
+/* ===== 私信 ===== */
+.msg-layout {
+  display: grid;
+  grid-template-columns: 255px 1fr;
+  gap: 22px;
+}
+
+.msg-contacts, .msg-chat { margin-bottom: 0; }
+.msg-chat { display: flex; flex-direction: column; }
+
+.contact-list {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  max-height: 440px;
+  overflow-y: auto;
+}
+
+.contact {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 11px 15px;
+  border-radius: var(--r-sm);
+  background: rgba(255, 255, 255, .045);
+  border: 1px solid transparent;
+  cursor: pointer;
+  font-size: 13px;
+  color: var(--text-dim);
+  transition: all .2s ease;
+}
+
+.contact .cname { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.search-head {
+  padding: 4px 6px 8px;
+  font-size: 12px;
+  color: var(--text-dim);
+  opacity: .85;
+}
+
+.contact .unread-badge {
+  background: #e5484d;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 16px;
+  padding: 0 7px;
+  border-radius: 999px;
+  flex-shrink: 0;
+}
+
+.contact:hover { background: rgba(255, 255, 255, .11); color: #fff; }
+
+.contact.active {
+  background: var(--accent-soft);
+  border-color: var(--accent-mid);
+  color: #fff;
+  font-weight: 600;
+}
+
+.chat-log {
+  flex: 1;
+  min-height: 310px;
+  max-height: 440px;
+  overflow-y: auto;
+  background: rgba(3, 5, 12, .45);
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  padding: 16px;
+  margin-bottom: 15px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.bubble {
+  max-width: 76%;
+  padding: 10px 16px;
+  border-radius: 17px;
+  font-size: 13px;
+  line-height: 1.7;
+  word-break: break-word;
+  white-space: pre-wrap;
+  animation: pop .25s ease;
+}
+
+@keyframes pop {
+  from { opacity: 0; transform: scale(.94) translateY(6px); }
+  to   { opacity: 1; transform: none; }
+}
+
+.bubble.me {
+  align-self: flex-end;
+  background: linear-gradient(135deg, var(--accent3), var(--accent-mid));
+  color: #fff;
+  border-bottom-right-radius: 5px;
+}
+
+.bubble.bot, .bubble.ai {
+  align-self: flex-start;
+  background: rgba(255, 255, 255, .09);
+  border: 1px solid var(--line);
+  color: var(--text-dim);
+  border-bottom-left-radius: 5px;
+}
+
+.bubble.sys {
+  align-self: center;
+  background: transparent;
+  color: var(--muted);
+  font-size: 11.5px;
+  max-width: 100%;
+}
+
+.center { text-align: center; }
+
+/* ===== AI 页 ===== */
+.card.chat { display: flex; flex-direction: column; }
+
+.ai-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.ai-head h3 { margin-bottom: 0; }
+.ai-head .tool-row { margin-top: 0; }
+
+/* ===== 通知 ===== */
+.notif-item {
+  padding: 12px 16px;
+  border-radius: var(--r-sm);
+  background: rgba(255, 255, 255, .05);
+  border-left: 3px solid var(--accent-mid);
+  margin-bottom: 10px;
+  font-size: 13px;
+  line-height: 1.7;
+  color: var(--text-dim);
+}
+
+/* ===== 登录遮罩 ===== */
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: none;
+  place-items: center;
+  background: rgba(3, 5, 13, .82);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.overlay.show { display: grid; animation: fadeIn .28s ease; }
+
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+.auth {
+  width: min(410px, calc(100vw - 40px));
+  background: linear-gradient(160deg, rgba(22, 29, 58, .97), rgba(11, 15, 34, .99));
+  border: 1px solid var(--line-strong);
+  border-radius: 26px;
+  padding: 34px 32px;
+  box-shadow: 0 30px 80px rgba(0, 0, 0, .75);
+  animation: popIn .34s cubic-bezier(.22,.9,.3,1) both;
+}
+
+@keyframes popIn {
+  from { opacity: 0; transform: translateY(24px) scale(.96); }
+  to   { opacity: 1; transform: none; }
+}
+
+.auth .head { text-align: center; margin-bottom: 24px; }
+
+.auth .head .brand-logo {
+  margin: 0 auto 15px;
+  width: 56px;
+  height: 56px;
+  flex: 0 0 56px;
+  border-radius: 17px;
+  font-size: 19px;
+}
+
+.auth .head h2 {
+  font-size: 20px;
+  font-weight: 700;
+  background: linear-gradient(135deg, var(--accent), var(--accent2), #d4bfff);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.auth .head p { color: var(--muted); font-size: 12.5px; margin-top: 8px; }
+
+.auth .tabs { justify-content: center; margin-bottom: 20px; }
+
+.field { display: flex; flex-direction: column; gap: 8px; margin-bottom: 15px; }
+.field label { font-size: 12.5px; color: var(--muted); }
+
+.input {
+  width: 100%;
+  padding: 12px 16px;
+  border-radius: var(--r-sm);
+  background: rgba(255, 255, 255, .06);
+  border: 1px solid var(--line);
+  color: var(--text);
+  font-size: 13.5px;
+  font-family: inherit;
+  outline: none;
+  transition: all .2s;
+}
+
+.input:focus {
+  border-color: var(--accent-mid);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
+.auth .btn { width: 100%; margin-top: 10px; }
+
+.hint { text-align: center; font-size: 12px; color: var(--muted); margin-top: 14px; }
+.hint a { color: var(--accent); text-decoration: none; }
+.hint a:hover { text-decoration: underline; }
+
+/* ===== 弹窗 ===== */
+.modal {
+  position: fixed;
+  inset: 0;
+  z-index: 300;
+  display: none;
+  place-items: center;
+  background: rgba(3, 5, 13, .78);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.modal.show { display: grid; animation: fadeIn .24s ease; }
+
+.modal-box {
+  width: min(700px, calc(100vw - 40px));
+  max-height: 84vh;
+  display: flex;
+  flex-direction: column;
+  background: linear-gradient(160deg, rgba(22, 29, 58, .98), rgba(11, 15, 34, .99));
+  border: 1px solid var(--line-strong);
+  border-radius: 22px;
+  box-shadow: 0 30px 80px rgba(0, 0, 0, .75);
+  animation: popIn .3s cubic-bezier(.22,.9,.3,1) both;
+  overflow: hidden;
+}
+
+.modal-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 24px;
+  border-bottom: 1px solid var(--line);
+  font-weight: 700;
+  font-size: 15px;
+}
+
+.modal-head .x {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, .05);
+  color: var(--muted);
+  font-size: 17px;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  transition: all .2s;
+  font-family: inherit;
+}
+
+.modal-head .x:hover {
+  background: rgba(248, 113, 113, .2);
+  border-color: var(--err);
+  color: var(--err);
+}
+
+.modal-body {
+  padding: 22px 24px;
+  overflow-y: auto;
+  font-size: 13.5px;
+  line-height: 1.8;
+  color: var(--text-dim);
+}
+
+.modal-body a { color: var(--accent); text-decoration: none; }
+.modal-body a:hover { text-decoration: underline; }
+
+/* ===== Toast ===== */
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: 36px;
+  transform: translate(-50%, 20px);
+  z-index: 400;
+  padding: 12px 28px;
+  border-radius: var(--r-pill);
+  background: rgba(20, 27, 55, .97);
+  border: 1px solid var(--line-strong);
+  color: var(--text);
+  font-size: 13px;
+  box-shadow: 0 14px 40px rgba(0, 0, 0, .6);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .26s, transform .26s;
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+
+.toast.show { opacity: 1; transform: translate(-50%, 0); }
+.toast.ok   { border-color: rgba(74, 222, 128, .55); }
+.toast.warn { border-color: rgba(251, 191, 36, .55); }
+.toast.err  { border-color: rgba(248, 113, 113, .55); }
+
+/* ===== 毛玻璃模式 ===== */
+body.frosted .card,
+body.frosted .sidebar,
+body.frosted .topbar {
+  backdrop-filter: blur(30px) saturate(160%);
+  -webkit-backdrop-filter: blur(30px) saturate(160%);
+}
+
+/* ===== 滚动条 ===== */
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: rgba(255, 255, 255, .03); }
+::-webkit-scrollbar-thumb { background: linear-gradient(180deg, var(--accent3), var(--accent-mid)); border-radius: 10px; }
+::-webkit-scrollbar-thumb:hover { background: var(--accent-mid); }
+
+/* ===== 响应式 ===== */
+@media (max-width: 980px) {
+  .msg-layout { grid-template-columns: 1fr; }
+  .contact-list, .chat-log { max-height: 240px; }
+}
+
+@media (max-width: 760px) {
+  :root { --sidebar-w: 68px; }
+  .app { flex-direction: column; }
+
+  .sidebar {
+    width: 100%;
+    flex: none;
+    height: auto;
+    flex-direction: row;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    border-right: none;
+    border-bottom: 1px solid var(--line);
+    position: sticky;
+    top: 0;
+    z-index: 30;
+    overflow-x: auto;
+  }
+
+  .brand { padding: 0; gap: 10px; flex: 0 0 auto; }
+  .brand-text { display: none; }
+  .nav { flex-direction: row; gap: 7px; flex: 1; overflow-x: auto; overflow-y: hidden; }
+  .nav-item { padding: 9px 14px; font-size: 12.5px; }
+  .nav-item span:not(.ico):not(.badge) { display: none; }
+  .nav-item .ico { font-size: 16px; }
+  .nav-item.active::before { display: none; }
+  .sidebar-footer { display: none; }
+
+  .topbar { padding: 14px 18px; }
+  .topbar-title { font-size: 18px; }
+  .content { padding: 20px 18px 44px; }
+  .card { padding: 19px 17px; border-radius: 18px; }
+  .group-card .field-row { grid-template-columns: 1fr 1fr; }
+}
+
+@media (max-width: 520px) {
+  .content { padding: 16px 13px 36px; }
+  .btn { padding: 10px 17px; font-size: 12.5px; }
+  .form-grid { grid-template-columns: 1fr; }
+  .theme-grid { grid-template-columns: repeat(auto-fill, minmax(116px, 1fr)); }
+}
+
+/* ===== 自动更新弹窗（打开软件即弹） ===== */
+.upd {
+  position: fixed; inset: 0; z-index: 460;
+  display: none; place-items: center;
+  background: rgba(3, 5, 13, .82);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+.upd.show { display: grid; animation: fadeIn .24s ease; }
+.upd-box {
+  width: min(520px, calc(100vw - 36px));
+  max-height: 88vh; overflow: auto;
+  display: flex; flex-direction: column; gap: 14px;
+  padding: 22px 22px 18px;
+  background: linear-gradient(160deg, rgba(22, 29, 58, .99), rgba(11, 15, 34, .99));
+  border: 1px solid var(--line-strong);
+  border-radius: 22px;
+  box-shadow: 0 30px 80px rgba(0, 0, 0, .78);
+  animation: popIn .3s cubic-bezier(.22,.9,.3,1) both;
+}
+.upd-head { display: flex; gap: 14px; align-items: flex-start; }
+.upd-badge {
+  flex: 0 0 auto; width: 46px; height: 46px; border-radius: 14px;
+  display: grid; place-items: center; font-size: 22px; line-height: 1;
+  background: linear-gradient(140deg, var(--accent2), var(--accent));
+  color: #0b1020;
+  box-shadow: 0 8px 22px rgba(124, 92, 255, .42);
+}
+.upd-head h3 { margin: 0 0 5px; font-size: 18px; color: var(--text); }
+.upd-head .sub { margin: 0; font-size: 12.5px; color: var(--muted); line-height: 1.6; }
+.upd-notes {
+  max-height: 170px; overflow: auto;
+  padding: 12px 14px; border-radius: 14px;
+  background: rgba(255, 255, 255, .04);
+  border: 1px solid var(--line);
+  font-size: 13px; color: var(--text-dim); line-height: 1.7;
+  white-space: pre-wrap; word-break: break-word;
+}
+.upd-bar { height: 8px; border-radius: 99px; background: rgba(255, 255, 255, .08); overflow: hidden; }
+.upd-bar > i {
+  display: block; height: 100%; width: 0; border-radius: 99px;
+  background: linear-gradient(90deg, var(--accent), var(--accent2));
+  transition: width .25s ease;
+}
+.upd-prog .txt { margin-top: 7px; font-size: 12px; color: var(--muted); }
+.upd-keep {
+  display: flex; flex-direction: column; gap: 7px;
+  padding: 12px 14px; border-radius: 14px;
+  background: rgba(74, 222, 128, .07);
+  border: 1px solid rgba(74, 222, 128, .3);
+}
+.upd-keep label { display: flex; gap: 9px; align-items: center; font-size: 13px; color: var(--text); cursor: pointer; }
+.upd-keep input { width: 15px; height: 15px; accent-color: var(--ok); }
+.upd-keep .hint { font-size: 12px; color: var(--muted); line-height: 1.65; }
+.upd-actions { display: flex; gap: 10px; justify-content: flex-end; flex-wrap: wrap; }
+.upd-actions .btn { min-width: 96px; }
+
+</style>
+
+<style id="fallback-stars">
+#starfield { display: none !important; }
+body {
+  background:
+    radial-gradient(1.5px 1.5px at 20% 30%, rgba(255,255,255,.9), transparent 50%),
+    radial-gradient(1px 1px at 40% 70%, rgba(168,192,255,.7), transparent 50%),
+    radial-gradient(2px 2px at 60% 20%, rgba(255,255,255,.8), transparent 50%),
+    radial-gradient(1px 1px at 80% 50%, rgba(200,210,255,.6), transparent 50%),
+    radial-gradient(1.5px 1.5px at 15% 80%, rgba(255,255,255,.7), transparent 50%),
+    radial-gradient(1px 1px at 50% 15%, rgba(168,192,255,.8), transparent 50%),
+    radial-gradient(1.2px 1.2px at 75% 85%, rgba(255,255,255,.7), transparent 50%),
+    radial-gradient(1px 1px at 30% 50%, rgba(180,200,255,.5), transparent 50%),
+    radial-gradient(900px 620px at 12% -8%,  rgba(63, 43, 150, 0.32), transparent 62%),
+    radial-gradient(760px 520px at 92% 8%,   rgba(168, 192, 255, 0.16), transparent 60%),
+    radial-gradient(900px 700px at 55% 112%, rgba(109, 91, 176, 0.20), transparent 62%),
+    linear-gradient(160deg, #080c1a 0%, #0c1228 55%, #060913 100%) !important;
+  background-attachment: fixed !important;
+  background-size: 100% 100% !important;
+}
+</style>
+</head>
+<body>
+
+  <!-- ===== 星空背景 ===== -->
+  <canvas id="starfield"></canvas>
+
+  <div class="app">
+    <!-- ============ 侧边栏 ============ -->
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-logo">CD</div>
+        <div class="brand-text">
+          <div class="brand-title">CDC 数据生成器</div>
+          <div class="brand-sub" id="brandSub">UI 版 · 全功能</div>
+        </div>
+      </div>
+
+      <nav class="nav" id="nav">
+        <button class="nav-item active" data-page="gen"><span class="ico">▦</span><span>数据生成</span></button>
+        <button class="nav-item" data-page="compile"><span class="ico">✎</span><span>自编译</span></button>
+        <button class="nav-item" data-page="zip"><span class="ico">🗜</span><span>打包工具</span></button>
+        <button class="nav-item" data-page="tools"><span class="ico">🧰</span><span>实用工具</span></button>
+        <button class="nav-item" data-page="account"><span class="ico">👤</span><span>账号中心</span></button>
+        <button class="nav-item" data-page="msg"><span class="ico">✉</span><span>私信</span><span class="badge" id="navUnread" style="display:none">0</span></button>
+        <button class="nav-item" data-page="ai"><span class="ico">🤖</span><span>AI 助手</span></button>
+        <button class="nav-item" data-page="settings"><span class="ico">⚙</span><span>设置</span></button>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div id="footUser">未登录</div>
+        <div class="muted" id="footRole">点击右上角登录</div>
+      </div>
+    </aside>
+
+    <!-- ============ 主区域 ============ -->
+    <main class="main">
+      <header class="topbar">
+        <div class="topbar-title" id="pageTitle">数据生成</div>
+        <div class="topbar-right">
+          <span class="chip" id="modeChip" title="当前运行模式">载入中…</span>
+          <button class="icon-btn" id="btnTheme" title="切换深浅主题">◐</button>
+          <button class="icon-btn" id="btnFrost" title="毛玻璃模式">❄</button>
+          <button class="chip user-chip" id="userChip"><span class="av" id="chipAv">?</span><span id="chipName">未登录</span></button>
+        </div>
+      </header>
+
+      <section class="content" id="content">
+
+        <!-- ========== 数据生成 ========== -->
+        <div class="page active" data-page="gen">
+          <div class="tabs">
+            <div class="tab on" data-tab="random">⚡ 随机生成</div>
+            <div class="tab" data-tab="group">🗂 分组生成</div>
+            <div class="tab" data-tab="manual">✍ 手动 .in</div>
+            <div class="tab" data-tab="gcode">🧩 生成器代码</div>
+          </div>
+
+          <!-- 随机生成 -->
+          <div class="tab-page on" data-tabp="random">
+            <div class="card">
+              <h3>生成参数</h3>
+              <div class="form-grid">
+                <label>起始 ID<input id="genStart" type="number" value="1" /></label>
+                <label>结束 ID<input id="genEnd" type="number" value="10" /></label>
+                <label>数据类型
+                  <select id="genType">
+                    <option value="0">整数（随机）</option>
+                    <option value="1">整数（不重复）</option>
+                    <option value="2">字符串（小写）</option>
+                    <option value="3">字符串（大写）</option>
+                    <option value="4">字符串（混合）</option>
+                    <option value="5">浮点数（随机）</option>
+                    <option value="6">日期时间（随机）</option>
+                  </select>
+                </label>
+                <label id="labRange1">范围起 / 长度<input id="genR1" type="number" value="1" /></label>
+                <label id="labRange2">范围止<input id="genR2" type="number" value="100" /></label>
+                <label id="labStrLen">字符串长度<input id="genStrLen" type="number" value="8" /></label>
+                <label>每文件个数<input id="genCount" type="number" value="10" /></label>
+                <label class="chk"><input id="genWriteCnt" type="checkbox" /> 首行写入个数</label>
+                <label class="full">自定义字符集<input id="genCharset" type="text" placeholder="留空用默认字符集" /></label>
+                <label class="full">附加变量（每文件首部，格式：变量名=值，每行一个）
+                  <textarea id="genExtra" rows="3" placeholder="n=10&#10;m=100"></textarea>
+                </label>
+                <label class="full">输出目录
+                  <div class="row">
+                    <input id="genOutDir" type="text" placeholder="留空 = 桌面" readonly />
+                    <button class="btn" id="genBrowse">浏览…</button>
+                    <button class="btn" id="genTsDir">📁 时间戳目录</button>
+                  </div>
+                </label>
+              </div>
+            </div>
+
+            <div class="card">
+              <h3>操作</h3>
+              <div class="tool-row">
+                <button class="btn primary" id="genRun">⚡ 生成 .in 文件</button>
+                <button class="btn" id="genPreviewBtn">👁 预览</button>
+                <button class="btn" id="genPackZip">🗜 打包本次数据点（另存 ZIP）</button>
+                <button class="btn" id="genClear">🗑 清除生成记录</button>
+                <button class="btn" id="genExportCsv">⬇ 导出 CSV 清单</button>
+                <button class="btn" id="genStats">📊 统计</button>
+                <button class="btn" id="genRename">🔁 批量重命名</button>
+                <button class="btn" id="genBig">📦 生成大文件</button>
+                <button class="btn" id="genView">📄 查看文件</button>
+                <button class="btn" id="genChangeExt">🔄 改扩展名 .txt</button>
+                <button class="btn" id="genSaveCfg">💾 保存配置</button>
+                <button class="btn" id="genLoadCfg">📂 加载配置</button>
+              </div>
+              <div class="gen-files" id="genFiles"></div>
+              <div class="preview-box" id="genPreview" style="display:none"></div>
+            </div>
+
+            <div class="card">
+              <h3>日志</h3>
+              <pre class="log" id="genLog"></pre>
+            </div>
+          </div>
+
+          <!-- 分组生成 -->
+          <div class="tab-page" data-tabp="group">
+            <div class="card">
+              <h3>分组字段配置</h3>
+              <div class="desc">每个组 = 一个 .in 文件；字段类型与「随机生成」一致（0 整数随机 / 1 整数不重复 / 2-4 字母串）。参数1：范围起或字符串长度；参数2：范围止。</div>
+              <div id="groupBox"></div>
+              <div class="row" style="margin-top:14px;align-items:flex-end">
+                <label>生成组数<input id="grpCount" type="number" value="1" min="1" /></label>
+                <button class="btn primary" id="grpRun">⚡ 生成分组数据</button>
+                <button class="btn" id="grpAdd">+ 添加组</button>
+                <button class="btn" id="grpSave">💾 保存分组配置</button>
+              </div>
+            </div>
+            <div class="card">
+              <h3>分组日志</h3>
+              <pre class="log" id="grpLog"></pre>
+            </div>
+          </div>
+
+          <!-- 手动 .in -->
+          <div class="tab-page" data-tabp="manual">
+            <div class="card">
+              <h3>编辑 .in 源文件</h3>
+              <label>文件名<input id="manName" type="text" placeholder="example（自动补 .in）" /></label>
+              <textarea id="manContent" class="editor" placeholder="在此输入 .in 文件内容…"></textarea>
+              <div class="actions">
+                <button class="btn primary" id="manSave">💾 保存为 .in</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- 生成器代码（exe 内置写码 → 编译 → 批量出 .in） -->
+          <div class="tab-page" data-tabp="gcode">
+            <div class="card">
+              <h3>🧩 生成器代码 <span class="tag" id="gcodeTag">CDCSCQ</span></h3>
+              <div class="desc">
+                在这里<b>直接写 C++ 生成器</b>（可 <code>#include &lt;cdcscq.hpp&gt;</code>），点「编译并生成」会自动：
+                <b>编译 → 对每个数据点运行 → 输出直接存成 <code>1.in</code>、<code>2.in</code>…</b>
+                （代码里用 <code>case_id()</code> 取当前编号，可按编号造递增规模 / 极端数据）。<br>
+                生成器把数据写 stdout 即可；<code>.out</code> 仍用「自编译」页拿你的 AC 代码对这些 .in 跑出来，流程不变。
+              </div>
+              <div class="row" style="flex-wrap:wrap;gap:8px;align-items:flex-end">
+                <label style="flex:1;min-width:200px">载入模板
+                  <select id="gcodeTpl">
+                    <option value="">— 选择模板载入 —</option>
+                    <option value="demo">综合示例（CDCSCQ 全功能演示）</option>
+                    <option value="seq">数列 / 极端数据</option>
+                    <option value="tree">树（链 / 菊花 / 毛毛虫 / 带权）</option>
+                    <option value="graph">图（随机 / 有环 / DAG / 网格）</option>
+                    <option value="str">字符串（随机 / 0-1 / 回文 / 括号）</option>
+                    <option value="geo">几何（多边形 / 点集）</option>
+                    <option value="query">区间询问 / 矩阵</option>
+                  </select>
+                </label>
+                <label>起始编号<input id="gcodeStart" type="number" value="1" /></label>
+                <label>结束编号<input id="gcodeEnd" type="number" value="10" /></label>
+              </div>
+              <label>数据存放目录（生成的 .in 落在这里）
+                <div class="row">
+                  <input id="gcodeDir" type="text" placeholder="点「浏览」或「📁 时间戳目录」" readonly />
+                  <button class="btn" id="gcodeBrowse">浏览…</button>
+                  <button class="btn" id="gcodeTsDir">📁 时间戳目录</button>
+                </div>
+              </label>
+              <textarea id="gcodeSrc" class="editor" spellcheck="false" style="min-height:330px" placeholder="// 在此写生成器代码，或从上方「载入模板」选一个"></textarea>
+              <div class="tool-row">
+                <button class="btn primary" id="gcodeRun">⚡ 编译并生成 .in</button>
+                <button class="btn" id="gcodeCheck">🔍 仅检查代码</button>
+                <button class="btn" id="gcodeSaveCpp">💾 另存为 .cpp</button>
+                <button class="btn" id="gcodePack">🗜 打包本次数据点</button>
+                <button class="btn" id="gcodeClearLog">🧹 清空日志</button>
+              </div>
+              <pre class="log" id="gcodeLog"></pre>
+            </div>
+          </div>
+        </div>
+
+        <!-- ========== 自编译 ========== -->
+        <div class="page" data-page="compile">
+          <div class="card">
+            <h3>C++ 编译运行</h3>
+            <div class="desc">用 g++ 把 .cpp 编译为 .out 并运行（.out 运行结果写回 <code>.out</code> 文件，与生成器配合完成"编译 + 验证"）。</div>
+            <label>C++ 源文件（.cpp）
+              <div class="row">
+                <input id="cmpCpp" type="text" placeholder="如 D:/work/temp_ac.cpp" />
+                <button class="btn" id="cmpCppBrowse">浏览…</button>
+              </div>
+            </label>
+            <label>g++ 路径
+              <div class="row">
+                <input id="cmpGpp" type="text" placeholder="留空自动检测（选择后自动保存，下次启动自动回填）" />
+                <button class="btn" id="cmpGppBrowse">浏览…</button>
+                <button class="btn" id="cmpGppAuto">🔍 自动检测</button>
+              </div>
+            </label>
+            <div class="row">
+              <label>批量：起始编号<input id="cmpStart" type="number" value="1" /></label>
+              <label>批量：结束编号<input id="cmpEnd" type="number" value="10" /></label>
+            </div>
+            <div class="tool-row">
+              <button class="btn primary" id="cmpBatch">⚡ 批量编译运行（start–end）</button>
+              <button class="btn primary" id="cmpSingle">▶ 单文件编译运行</button>
+            </div>
+          </div>
+          <div class="card">
+            <h3>内置生成函数库 <span class="tag" id="libName">CDCSCQ</span></h3>
+            <div class="desc">
+              写生成器时直接 <code>#include &lt;cdcscq.hpp&gt;</code> 即可（编译时自动挂载 <code>-I</code> 路径，无需手配）。
+              涵盖随机数列 / 向量 / 字符串 / 随机树 / 随机图 / 多边形等，对标 CYaRon。
+            </div>
+            <div id="libStatus" class="muted" style="margin:6px 0 10px">检测中…</div>
+            <div id="libGroups"></div>
+            <div class="tool-row">
+              <button class="btn" id="libCopyHeader">📋 复制 include 用法</button>
+              <button class="btn" id="libNewDemo">📄 另存示例生成器（.cpp）</button>
+            </div>
+          </div>
+          <div class="card">
+            <h3>编译日志</h3>
+            <pre class="log" id="cmpLog"></pre>
+          </div>
+        </div>
+
+        <!-- ========== 打包工具 ========== -->
+        <div class="page" data-page="zip">
+          <div class="card">
+            <h3>打包 ZIP</h3>
+            <div class="desc">把生成的测试数据（或任意目录）打包为 zip 压缩包。</div>
+            <label>ZIP 文件名<input id="zipName" type="text" placeholder="archive（自动补 .zip）" /></label>
+            <label>源目录
+              <div class="row">
+                <input id="zipSrc" type="text" placeholder="留空 = 上次生成目录" readonly />
+                <button class="btn" id="zipBrowse">浏览…</button>
+              </div>
+            </label>
+            <div class="actions">
+              <button class="btn primary" id="zipRun">🗜 立即打包</button>
+            </div>
+            <pre class="log" id="zipLog"></pre>
+          </div>
+        </div>
+
+        <!-- ========== 实用工具 ========== -->
+        <div class="page" data-page="tools">
+          <div class="card">
+            <h3>GitHub 代理加速</h3>
+            <div class="desc">走国内镜像更快打开 GitHub / releases 下载链接。</div>
+            <label>GitHub 链接（留空 = 一键加速 github.com）
+              <div class="row">
+                <input id="ghUrl" type="text" placeholder="https://github.com/owner/repo 或 releases 链接" />
+              </div>
+            </label>
+            <label>代理前缀
+              <select id="ghPre">
+                <option>https://ghproxy.net/</option>
+                <option>https://mirror.ghproxy.com/</option>
+                <option>https://gh.api.99988866.xyz/</option>
+              </select>
+            </label>
+            <div class="tool-row">
+              <button class="btn primary" id="ghOpen">🚀 加速打开链接</button>
+              <button class="btn" id="ghHome">一键加速 github.com</button>
+              <button class="btn" id="ghCopy">📋 复制加速链接</button>
+            </div>
+          </div>
+
+          <div class="card">
+            <h3>实用工具箱</h3>
+            <div class="desc" id="toolsDesc">系统工具在 Qt 桌面版可直接启动；网页版提供等效的在线/计算工具。</div>
+            <div class="tool-grid" id="toolGrid"></div>
+          </div>
+        </div>
+
+        <!-- ========== 账号中心 ========== -->
+        <div class="page" data-page="account">
+          <div class="card" id="accLoginCard">
+            <h3 id="accCardTitle">登录 / 注册</h3>
+            <div class="form-grid cols-2">
+              <label>用户名<input id="accUser" type="text" placeholder="用户名" /></label>
+              <label>密码<input id="accPass" type="password" placeholder="密码" /></label>
+            </div>
+            <div class="tool-row">
+              <button class="btn primary" id="accLogin">登录</button>
+              <button class="btn" id="accReg">注册</button>
+            </div>
+            <pre class="log" id="accLog"></pre>
+          </div>
+
+          <div class="card" id="accInfoCard" style="display:none">
+            <h3>我的账号</h3>
+            <div class="kv"><span><b>用户名</b></span><span id="accName">-</span></div>
+            <div class="kv"><span><b>角色</b></span><span id="accRole">-</span></div>
+            <div class="kv"><span><b>AI 剩余</b></span><span id="accQuota">-</span></div>
+            <div class="tool-row">
+              <button class="btn" id="accLogout">退出登录</button>
+              <button class="btn" id="accRename">✏ 修改用户名</button>
+              <button class="btn" id="accActivate">🎫 输入激活码</button>
+            </div>
+          </div>
+
+          <div class="card" id="accNotifCard" style="display:none">
+            <h3>公告通知（管理员可发布）</h3>
+            <div class="row">
+              <input id="notifTitle" type="text" placeholder="标题" />
+              <input id="notifContent" type="text" placeholder="内容" />
+              <button class="btn primary" id="notifPost">发布</button>
+            </div>
+            <div class="msg-list" id="notifList" style="margin-top:12px"></div>
+          </div>
+
+          <div class="card">
+            <h3>更新</h3>
+            <div class="tool-row">
+              <button class="btn primary" id="accUpdate">🔄 检查更新</button>
+            </div>
+            <div id="updBox" class="desc"></div>
+          </div>
+        </div>
+
+        <!-- ========== 私信 ========== -->
+        <div class="page" data-page="msg">
+          <div class="msg-layout">
+            <div class="card msg-contacts">
+              <h3>联系人</h3>
+              <div class="row" style="margin-bottom:10px">
+                <input id="msgSearch" type="text" placeholder="输入字符即时搜索用户…" autocomplete="off" />
+                <button class="btn" id="msgAddPeer">打开</button>
+              </div>
+              <div class="contact-list" id="contactList"></div>
+            </div>
+            <div class="card msg-chat">
+              <h3 id="msgPeerTitle">选择联系人开始聊天</h3>
+              <div class="chat-log" id="msgLog"><div class="muted center">只有对方给你发过消息，才会出现在左侧通讯录（红色角标 = 未读）</div></div>
+              <div class="row">
+                <input id="msgText" type="text" placeholder="输入消息，回车发送" />
+                <button class="btn primary" id="msgSend">发送</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ========== AI 助手 ========== -->
+        <div class="page" data-page="ai">
+          <div class="card chat">
+            <div class="ai-head">
+              <h3>AI 助手</h3>
+              <div class="tool-row">
+                <span class="chip" id="aiQuota">剩余 -- 次</span>
+                <span class="chip" id="aiMode">--</span>
+                <button class="btn" id="aiClear">清空对话</button>
+              </div>
+            </div>
+            <div class="chat-log" id="aiLog"></div>
+            <div class="row">
+              <textarea id="aiInput" rows="2" placeholder="问点什么…（Markdown 回复）"></textarea>
+              <button class="btn primary" id="aiSend">发送</button>
+            </div>
+            <div class="desc" style="margin-top:8px">提示：在「设置 → AI 配置」填写自己的 API Key 可无限使用；否则使用服务器配额（剩余次数见上方）。</div>
+          </div>
+        </div>
+
+        <!-- ========== 设置 ========== -->
+        <div class="page" data-page="settings">
+          <div class="card">
+            <h3>主题</h3>
+            <div class="theme-grid" id="themeGrid"></div>
+            <div class="tool-row" style="margin-top:10px;align-items:center;gap:10px;flex-wrap:wrap">
+              <span style="font-size:12px;color:var(--muted)">自定义配色：</span>
+              <label style="font-size:12px">主色 <input id="custAccent" type="color" value="#8ab4ff" /></label>
+              <label style="font-size:12px">辅色 <input id="custAccent2" type="color" value="#7c5cff" /></label>
+              <button class="btn" id="custThemeApply">应用自定义</button>
+              <button class="btn" id="custThemeReset">恢复预设</button>
+            </div>
+          </div>
+          <div class="grid-2">
+            <div class="card">
+              <h3>外观</h3>
+              <label class="chk"><input id="setFrosted" type="checkbox" /> 毛玻璃效果（内容区模糊）</label>
+              <div style="font-size:11px;color:var(--muted);margin-top:6px">主题配色可在上方「主题」中切换或自定义</div>
+            </div>
+            <div class="card">
+              <h3>编译与输出</h3>
+              <label>g++ 路径
+                <div class="row">
+                  <input id="setGpp" type="text" placeholder="g++.exe 路径" />
+                  <button class="btn" id="setGppBrowse">浏览…</button>
+                  <button class="btn" id="setGppAuto">自动检测</button>
+                </div>
+              </label>
+              <label>输出目录
+                <div class="row">
+                  <input id="setOutDir" type="text" readonly />
+                  <button class="btn" id="setOutDirBrowse">浏览…</button>
+                </div>
+              </label>
+            </div>
+          </div>
+          <div class="card">
+            <h3>云端与 AI 配置</h3>
+            <div class="desc">云端账号 / 私信 / AI 配额已内置服务器地址（由程序内部持有，前端不可见、不可修改），打开即用，无需填写。下方仅用于配置你自己的 AI Key（自备 Key 直连，免服务器配额）。</div>
+            <label>AI API Key（自备 Key 直连，免配额）
+              <input id="setAiKey" type="password" placeholder="sk-…（留空 = 走服务器配额）" />
+            </label>
+            <div class="row">
+              <label>模型<input id="setAiModel" type="text" placeholder="qwen-plus" /></label>
+              <label>接口地址<input id="setAiBase" type="text" placeholder="https://dashscope.aliyuncs.com/compatible-mode/v1" /></label>
+            </div>
+            <div class="tool-row">
+              <button class="btn primary" id="setAiSave">保存 AI 配置</button>
+              <button class="btn" id="setCfgReset">恢复默认</button>
+            </div>
+          </div>
+          <div class="card">
+            <h3>关于</h3>
+            <div class="kv"><span><b>版本</b></span><span>v7.1.0</span></div>
+            <div class="kv"><span><b>界面</b></span><span>HTML / CSS / JS（可独立网页运行或 Qt 桌面运行）</span></div>
+            <div class="kv"><span><b>后端</b></span><span id="aboutBackend">Web 模式（localStorage + 云端 API）</span></div>
+            <div class="kv"><span><b>运行模式</b></span><span id="aboutMode">-</span></div>
+            <div class="tool-row">
+              <button class="btn" id="btnAbout">关于作者</button>
+            </div>
+          </div>
+        </div>
+
+      </section>
+    </main>
+  </div>
+
+  <!-- ============ 登录遮罩 ============ -->
+  <div class="overlay" id="overlay">
+    <div class="auth">
+      <div class="head">
+        <div class="brand-logo">CD</div>
+        <h2>CDC 数据生成器</h2>
+        <p>登录以同步账号、私信与 AI 配额</p>
+      </div>
+      <div class="tabs"><div class="tab on" id="tabLogin">登录</div><div class="tab" id="tabReg">注册</div></div>
+      <div class="field"><label>用户名</label><input class="input" id="authUser" placeholder="用户名" /></div>
+      <div class="field"><label>密码</label><input class="input" id="authPass" type="password" placeholder="密码" /></div>
+      <button class="btn primary btn-lg" id="btnAuth">登录</button>
+      <div class="hint" id="authHint"></div>
+      <div class="hint"><a href="javascript:void(0)" id="authSkip">先逛逛，稍后登录</a></div>
+    </div>
+  </div>
+
+  <!-- ============ 自动更新弹窗（有新版时打开软件即弹） ============ -->
+  <div class="upd" id="updModal">
+    <div class="upd-box">
+      <div class="upd-head">
+        <div class="upd-badge" id="updBadge">⬆</div>
+        <div>
+          <h3><span id="updTitle">发现新版本</span> <span id="updVer">—</span></h3>
+          <p class="sub" id="updSub"></p>
+        </div>
+      </div>
+      <div class="upd-notes" id="updNotes"></div>
+      <div class="upd-keep" id="updKeepWrap" style="display:none">
+        <label><input type="checkbox" id="updKeep" checked /> <b>保留我的配置与数据（推荐）</b></label>
+        <div class="hint" id="updKeepHint"></div>
+      </div>
+      <div class="upd-prog" id="updProgWrap" style="display:none">
+        <div class="upd-bar"><i id="updBar"></i></div>
+        <div class="txt" id="updProgText">准备下载…</div>
+      </div>
+      <div class="upd-actions">
+        <button class="btn" id="updLater">稍后</button>
+        <button class="btn primary" id="updGo">立即更新</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ 通用弹窗 ============ -->
+  <div class="modal" id="modal">
+    <div class="modal-box">
+      <div class="modal-head"><span id="modalTitle">结果</span><button class="x" id="modalClose">×</button></div>
+      <div class="modal-body" id="modalBody"></div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+/* ============================================================
+   CDC 数据生成器 · UI 前端逻辑（v7.1.0 全功能版）
+   - Qt 桌面模式：通过 QWebChannel 调用 C++ Bridge（原生文件/编译/工具）
+   - 网页模式：localStorage 本地数据 + 云端 API（服务器可配）
+   两套模式共用同一套 api.* 接口，页面逻辑无需区分。
+   ============================================================ */
+'use strict';
+
+/* ---------------- 基础工具 ---------------- */
+const $  = (s) => document.querySelector(s);
+const $$ = (s) => Array.from(document.querySelectorAll(s));
+const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 8); }
+
+let toastTimer = 0;
+function toast(msg, type) {
+  const t = $('#toast');
+  t.textContent = msg;
+  t.className = 'toast show' + (type ? ' ' + type : '');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2200);
+}
+function setStatus(msg) { const s = $('#pageTitle'); if (s) s.textContent = msg; }
+
+/* ---------------- 工具清单（单一数据源） ---------------- */
+const TOOLS = [
+  { label: '百度搜索',     icon: '🔍', kind: 'url',      cmd: 'https://www.baidu.com' },
+  { label: '打开网址',     icon: '🌐', kind: 'prompt-url', cmd: '' },
+  { label: '密码生成',     icon: '🔑', kind: 'calc',     calc: 'password' },
+  { label: '计算器',       icon: '🧮', kind: 'tool',     cmd: 'calc' },
+  { label: '记事本',       icon: '📝', kind: 'tool',     cmd: 'notepad' },
+  { label: '命令提示符',   icon: '❯',  kind: 'tool',     cmd: 'cmd' },
+  { label: 'PowerShell',   icon: '🟦', kind: 'tool',     cmd: 'powershell' },
+  { label: '文件加密',     icon: '🔒', kind: 'tool',     cmd: 'cipher' },
+  { label: '截图工具',     icon: '✂',  kind: 'tool',     cmd: 'snippingtool' },
+  { label: '屏幕键盘',     icon: '⌨',  kind: 'tool',     cmd: 'osk' },
+  { label: 'IP 查询',      icon: '🌍', kind: 'tool',     cmd: 'cmd /c start "" ipconfig' },
+  { label: 'MD5 校验',     icon: '＃',  kind: 'calc',     calc: 'md5' },
+  { label: 'Base64',       icon: '🔡', kind: 'calc',     calc: 'base64' },
+  { label: 'JSON 格式化',  icon: '🧾', kind: 'calc',     calc: 'json' },
+  { label: '二维码',       icon: '🔳', kind: 'prompt-qr', cmd: '' },
+  { label: '天气查询',     icon: '⛅', kind: 'url',      cmd: 'https://www.weather.com.cn' },
+  { label: '单位换算',     icon: '📐', kind: 'url',      cmd: 'https://www.google.com/search?q=unit+converter' },
+  { label: '定时关机',     icon: '⏻',  kind: 'prompt-shutdown', cmd: '' },
+  { label: '倒计时',       icon: '⏱',  kind: 'prompt-countdown', cmd: '' },
+  { label: '清理临时文件', icon: '🧹', kind: 'tool',     cmd: 'cleanmgr' },
+  { label: '任务管理器',   icon: '📊', kind: 'tool',     cmd: 'taskmgr' },
+  { label: '注册表编辑器', icon: '🗃',  kind: 'tool',     cmd: 'regedit' },
+  { label: '服务',         icon: '⚙',  kind: 'tool',     cmd: 'services.msc' },
+  { label: '设备管理器',   icon: '🖥',  kind: 'tool',     cmd: 'devmgmt.msc' },
+  { label: '磁盘管理',     icon: '💽', kind: 'tool',     cmd: 'diskmgmt.msc' },
+  { label: '控制面板',     icon: '🎛', kind: 'tool',     cmd: 'control' },
+  { label: '系统配置',     icon: '🛠',  kind: 'tool',     cmd: 'msconfig' },
+  { label: '资源管理器',   icon: '📁', kind: 'tool',     cmd: 'explorer' },
+  { label: '远程桌面',     icon: '🖧', kind: 'tool',     cmd: 'mstsc' },
+  { label: '字符映射表',   icon: '🔣', kind: 'tool',     cmd: 'charmap' },
+  { label: '系统信息',     icon: 'ℹ',  kind: 'tool',     cmd: 'msinfo32' },
+  { label: '性能监视器',   icon: '📈', kind: 'tool',     cmd: 'perfmon' },
+  { label: '资源监视器',   icon: '📉', kind: 'tool',     cmd: 'resmon' },
+  { label: '防火墙',       icon: '🛡', kind: 'tool',     cmd: 'firewall.cpl' },
+  { label: '网络连接',     icon: '🌐', kind: 'tool',     cmd: 'ncpa.cpl' },
+  { label: '取色器',       icon: '🎨', kind: 'tool',     cmd: 'colorcpl' },
+];
+
+/* ---------------- 主题清单 ---------------- */
+const THEMES = [
+  { name: 'default', label: '默认蓝',  sw: 'linear-gradient(135deg,#3887ff,#7db4ff)' },
+  { name: 'dark',    label: '暗夜灰',  sw: 'linear-gradient(135deg,#2b2f38,#15181f)' },
+  { name: 'green',   label: '护眼绿',  sw: 'linear-gradient(135deg,#2e9e5b,#7bd6a0)' },
+  { name: 'cream',   label: '柔和米',  sw: 'linear-gradient(135deg,#c9913f,#e8c98f)' },
+  { name: 'blue',    label: '深蓝科',  sw: 'linear-gradient(135deg,#1f6fff,#6fa8ff)' },
+  { name: 'pink',    label: '粉彩樱',  sw: 'linear-gradient(135deg,#e8659b,#ffb3d4)' },
+  { name: 'gold',    label: '黑金奢',  sw: 'linear-gradient(135deg,#d4af37,#8a6f1f)' },
+  { name: 'grey',    label: '极简灰',  sw: 'linear-gradient(135deg,#7a8696,#b6c0cf)' },
+];
+
+/* ============================================================
+   运行模式检测 + 统一 api 层
+   ============================================================ */
+let MODE = (typeof qt !== 'undefined' && qt.webChannelTransport) ? 'qt' : 'web';
+let qtBridge = null;              // QWebChannel bridge（Qt 模式）
+let api = null;                   // 统一接口（Promise 风格）
+
+/* ---------------- 网页模式后端 ---------------- */
+const LS = {
+  get(k, d) { try { const v = localStorage.getItem('cdc_' + k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } },
+  set(k, v) { try { localStorage.setItem('cdc_' + k, JSON.stringify(v)); } catch (e) {} },
+  del(k) { try { localStorage.removeItem('cdc_' + k); } catch (e) {} },
+};
+
+function webDeviceId() {
+  const raw = navigator.userAgent + '|' + navigator.hardwareConcurrency + '|' + navigator.language + '|' + screen.width + 'x' + screen.height;
+  let h = 5381;
+  for (let i = 0; i < raw.length; i++) h = ((h << 5) + h) + raw.charCodeAt(i);
+  return (h >>> 0).toString(16).toUpperCase().padStart(8, '0');
+}
+
+/* 云端调用统一走本地后端 /api/cloud 代理：
+   - 后端内部持有云端地址（XOR 编码，前端全程不接触真实地址，规避 CORS 与暴露）
+   - cloudCall(fields)                  → form-urlencoded 转发到 /api/activate
+   - cloudCall({data}, 'json')          → JSON 转发
+   - cloudCall(fields, 'form', {chat:1})→ 追加 ?chat=1（AI 代理） */
+async function cloudCall(fields, ctype, opts) {
+  opts = opts || {};
+  let body, headers;
+  if (ctype === 'json') {
+    body = JSON.stringify(fields.data || {});
+    headers = { 'Content-Type': 'application/json' };
+  } else {
+    body = new URLSearchParams(fields).toString();
+    headers = { 'Content-Type': 'application/x-www-form-urlencoded' };
+  }
+  const url = '/api/cloud' + (opts.chat ? '?chat=1' : '');
+  try {
+    const r = await fetch(url, { method: 'POST', headers, body });
+    const text = await r.text();
+    let j = null;
+    try { j = JSON.parse(text); } catch (e) { j = null; }
+    if (j && typeof j === 'object') { j._http = r.status; return j; }
+    return { ok: false, err: 'badjson', _http: r.status, raw: text.slice(0, 500) };
+  } catch (e) { return { ok: false, err: 'net', message: '无法连接云端：' + e.message }; }
+}
+
+const webBridge = {
+  mode: 'web',
+
+  /* ---- 账号 ---- */
+  async login(user, pass) {
+    try {
+      const r = await cloudCall({ op: 'login', user, pass });
+      if (r.ok && String(r.ok) !== '0') {
+        LS.set('session', { user, isAdmin: String(r.admin) === '1' || String(r.admin) === 'true' });
+        return { ok: true, user, isAdmin: LS.get('session').isAdmin, message: '登录成功（云端）' };
+      }
+      if (r.err === 'badjson') return { ok: false, message: '云端未返回合法 JSON（HTTP ' + (r._http || '?') + '）：' + (r.raw || '').slice(0, 120) };
+      if (r.err === 'winhttp_no_response') return { ok: false, message: '连接云端失败：地址不可达或被网络拦截' };
+      if (r.err === 'cloud_nonjson') return { ok: false, message: '云端返回异常内容（HTTP ' + (r.status || '?') + '），多为 PHP 未部署/路径不对' };
+      const map = { banned: '账号已被封禁', badpass: '账号或密码错误', nouser: '账号或密码错误', server: '服务器内部错误（数据库异常，检查 data 目录可写）', op: '接口未识别', winhttp_no_response: '连接云端失败：地址不可达或被网络拦截', cloud_nonjson: '云端返回异常内容（多为 PHP 未部署/路径不对）', cloud_not_configured: '云端未配置' };
+      const rawFallbackL = (r.err || r.error || r.reason || (typeof r.raw === 'string' ? r.raw.slice(0, 140) : JSON.stringify(r).slice(0, 140)) || '未知');
+      return { ok: false, message: map[r.err] || ('登录失败（云端）：' + rawFallbackL) };
+    } catch (e) { return { ok: false, message: '无法连接云端服务器：' + e.message }; }
+  },
+  async register(user, pass) {
+    if (!user || !pass) return { ok: false, message: '请输入用户名和密码' };
+    try {
+      const r = await cloudCall({ op: 'register', user, pass });
+      if (r.ok && String(r.ok) !== '0') return { ok: true, message: '注册成功（云端）' };
+      if (r.err === 'badjson') return { ok: false, message: '云端未返回合法 JSON（HTTP ' + (r._http || '?') + '）：' + (r.raw || '').slice(0, 120) };
+      if (r.err === 'winhttp_no_response') return { ok: false, message: '连接云端失败：地址不可达或被网络拦截' };
+      if (r.err === 'cloud_nonjson') return { ok: false, message: '云端返回异常内容（HTTP ' + (r.status || '?') + '），多为 PHP 未部署/路径不对' };
+      const map = { exists: '用户名已存在', baduser: '用户名含非法字符', param: '参数不完整', server: '服务器内部错误（数据库异常，检查 data 目录可写）', op: '接口未识别' };
+      return { ok: false, message: map[r.err] || ('注册失败（云端）：' + (r.err || r.reason || '未知错误')) };
+    } catch (e) { return { ok: false, message: '无法连接云端服务器：' + e.message }; }
+  },
+  async logout() { LS.del('session'); return { ok: true }; },
+  async renameUser(name) {
+    const s = LS.get('session', null); if (!s) return { ok: false, message: '未登录' };
+    const users = LS.get('users', {});
+    if (users[name] && name !== s.user) return { ok: false, message: '用户名已存在' };
+    if (users[s.user]) { users[name] = users[s.user]; delete users[s.user]; LS.set('users', users); }
+    LS.set('session', { user: name, isAdmin: s.isAdmin });
+    return { ok: true, message: '已修改为 ' + name };
+  },
+  async activate(code) {
+    try {
+      const r = await cloudCall({ data: { code, device: webDeviceId(), user: (LS.get('session') || {}).user || '', app: 'cdc-exceed', ver: '7.1.0' } }, 'json');
+      if (r.ok) {
+        const add = Number(r.add) || 0;
+        const q = LS.get('quota', { paidLeft: 0 });
+        q.paidLeft += add; LS.set('quota', q);
+        return { ok: true, message: add > 0 ? ('激活成功！本次 +' + add + ' 次（次数由激活码决定）') : '该激活码在本机已激活过，次数不变', add };
+      }
+      // 出错原因一律如实回显：过去只映射 3 种原因，其余全部显示成含糊的「激活失败」，
+      // 导致「云端只认 JSON body、老客户端发 form」这类故障根本查不出来（2026-09-25 事故）。
+      const mapA = {
+        used_out: '该激活码已在 3 台电脑上使用，达到上限',
+        invalid: '激活码无效或不存在（请核对大小写与中间的横杠）',
+        nodevice: '本机设备号为空，无法激活：请在本软件内操作，不要用无痕模式或第三方页面',
+        already: '该激活码在本机已激活过，次数不变',
+        unauthorized: '服务端拒绝了本次请求（令牌校验未通过），请联系作者',
+        too_many: '操作过于频繁，请等 1 分钟再试',
+        server: '服务器内部错误（数据库异常），请联系作者',
+        db_error: '服务器数据库错误',
+        param: '参数不完整',
+        op: '客户端与服务端版本不匹配（接口未识别），请更新到最新版',
+        badjson: '云端返回的不是合法 JSON（多为 PHP 未部署/路径不对，HTTP ' + (r._http || '?') + '）',
+        net: '无法连接云端服务器'
+      };
+      const keyA = r.reason || r.err || '';
+      return { ok: false, message: mapA[keyA] || ('激活失败（' + keyA + '）' + (keyA ? '' : '：' + JSON.stringify(r).slice(0, 160))) };
+    } catch (e) { return { ok: false, message: '无法连接激活服务器：' + e.message }; }
+  },
+  async getInfo() {
+    const s = LS.get('session', null);
+    return {
+      user: s ? s.user : '', isAdmin: s ? !!s.isAdmin : false,
+      server: LS.get('server', ''), gpp: '', outDir: '桌面', theme: LS.get('theme', 'default'),
+      version: '7.1.0', mode: 'web', hasKey: !!LS.get('ai', {}).key,
+    };
+  },
+
+  /* ---- 私信 ---- */
+  async getUsers() {
+    try { const r = await cloudCall({ op: 'msg_users' }); return Array.isArray(r.users) ? r.users : []; } catch (e) { return []; }
+  },
+  async msgPeers() {
+    // 会话列表：只有和我有过消息往来的人（对方给我发过 / 我给他发过），带每人未读数
+    const s = LS.get('session', null); if (!s) return [];
+    try {
+      const r = await cloudCall({ op: 'msg_peers', user: s.user });
+      return (Array.isArray(r.peers) ? r.peers : []).map((p) => ({ name: p.name, unread: Number(p.unread) || 0, lasttime: Number(p.lasttime) || 0 }));
+    } catch (e) { return []; }
+  },
+  async sendMsg(to, content) {
+    const s = LS.get('session', null); if (!s) return { ok: false, message: '请先登录' };
+    try { const r = await cloudCall({ op: 'msg_send', from: s.user, to, content }); return r.ok ? { ok: true, message: '已发送' } : { ok: false, message: '发送失败（云端）' }; }
+    catch (e) { return { ok: false, message: '无法连接云端服务器：' + e.message }; }
+  },
+  async getConv(peer) {
+    const s = LS.get('session', null); if (!s) return [];
+    try {
+      const r = await cloudCall({ op: 'msg_conv', user: s.user, peer });
+      return (Array.isArray(r.msgs) ? r.msgs : []).map((m) => ({ from: m.from, content: m.content, time: m.time || 0 }));
+    } catch (e) { return []; }
+  },
+  async unread() {
+    const s = LS.get('session', null); if (!s) return 0;
+    try { const r = await cloudCall({ op: 'msg_unread', user: s.user }); return Number(r.count) || 0; } catch (e) { return 0; }
+  },
+  async markRead(peer) {
+    const s = LS.get('session', null); if (!s) return;
+    try { await cloudCall({ op: 'msg_read', from: peer, to: s.user }); } catch (e) {}
+  },
+  async getNotifs() {
+    return LS.get('notifs', []).sort((a, b) => b.time - a.time);
+  },
+  async postNotif(title, content) {
+    const s = LS.get('session', null);
+    if (!s || !s.isAdmin) return { ok: false, message: '仅管理员可发布公告' };
+    const notifs = LS.get('notifs', []);
+    notifs.push({ id: uid(), title, content, createdBy: s.user, time: Date.now() });
+    LS.set('notifs', notifs);
+    return { ok: true, message: '已发布' };
+  },
+  async delNotif(id) {
+    LS.set('notifs', LS.get('notifs', []).filter((n) => n.id !== id));
+    return { ok: true };
+  },
+
+  /* ---- AI ---- */
+  async aiChat(text) {
+    const server = LS.get('server', '');
+    const ai = LS.get('ai', {});
+    if (ai.key) {
+      try {
+        const body = { model: ai.model || 'qwen-plus', messages: [
+          { role: 'system', content: '你是 CDC exceed 测试数据生成器的内置 AI 助手，回答请用 Markdown 格式。' },
+          { role: 'user', content: text },
+        ], stream: false };
+        const r = await fetch((ai.base || 'https://dashscope.aliyuncs.com/compatible-mode/v1') + '/chat/completions', {
+          method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + ai.key }, body: JSON.stringify(body),
+        });
+        const j = await r.json().catch(() => ({}));
+        const reply = (j.choices && j.choices[0] && j.choices[0].message && j.choices[0].message.content) || (j.error && (j.error.message || JSON.stringify(j.error))) || '（空回复）';
+        return { ok: true, reply, left: -1, mode: 'key' };
+      } catch (e) { return { ok: false, reply: '⚠️ 请求失败：' + e.message + '（若为 CORS 错误，请使用 Qt 桌面版或配置云端服务器）', mode: 'key' }; }
+    }
+    try {
+      const s = LS.get('session', null);
+      const payload = { model: 'qwen-plus', messages: [
+        { role: 'system', content: '你是 CDC exceed 测试数据生成器的内置 AI 助手，回答请用 Markdown 格式。' },
+        { role: 'user', content: text },
+      ], stream: false };
+      const r = await cloudCall({ data: { device: webDeviceId(), model: 'qwen-plus', user: s ? s.user : '', payload } }, 'json', { chat: 1 });
+      if (r.ok) return { ok: true, reply: r.reply || '（空回复）', left: Number(r.left) || 0, mode: 'server' };
+      const reason = { no_server_key: '服务器未配置 AI 密钥，请在「设置」填写自己的 API Key', quota: '服务器 AI 额度已用完，请激活码购买或在设置填写 Key', upstream_error: '服务器调用模型失败', network_error: '服务器无法连接模型 API', api_error: '模型 API 返回错误：' + (r.detail || ''), bad_gateway: '服务器返回异常：' + (r.detail || '') }[r.reason] || ('服务器错误：' + (r.reason || 'unknown'));
+      return { ok: false, reply: '⚠️ ' + reason, mode: 'server' };
+    } catch (e) { return { ok: false, reply: '⚠️ 无法连接云端服务器：' + e.message, mode: 'server' }; }
+  },
+  async aiQuota() {
+    const q = LS.get('quota', { paidLeft: 0 });
+    try {
+      const s = LS.get('session', null);
+      const r = await cloudCall({ op: 'quota', device: webDeviceId(), user: s ? s.user : '' });
+      return { left: Number(r.left) || 0, granted: Number(r.granted) || 0, mode: 'server' };
+    } catch (e) { return { left: q.paidLeft, granted: 0, mode: LS.get('ai', {}).key ? 'key' : 'server' }; }
+  },
+
+  /* ---- 生成（网页模式：JS 生成 + 预览 + 下载） ---- */
+  async gen(params) {
+    const files = [];
+    try {
+      for (let id = Number(params.startId); id <= Number(params.endId); id++) {
+        let lines = [];
+        const vars = (params.extraVars || '').split('\n').map((l) => l.trim()).filter(Boolean);
+        vars.forEach((l) => { const eq = l.indexOf('='); lines.push(eq >= 0 ? l : l); });
+        if (params.writeCount) lines.push(String(params.count));
+        const r1 = Number(params.range1), r2 = Number(params.range2);
+        const len = Math.max(1, Number(params.strLen) || 8);
+        const cnt = Math.max(1, Number(params.count) || 1);
+        const cs = params.customCharset || 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+        const lower = 'abcdefghijklmnopqrstuvwxyz', upper = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        const charset = params.customCharset ? cs : [2, 3, 4].includes(Number(params.type)) ? [lower, upper, lower + upper + '0123456789'][Number(params.type) - 2] : lower + upper + '0123456789';
+        const rs = (n) => { let s = ''; for (let i = 0; i < n; i++) s += charset[Math.floor(Math.random() * charset.length)]; return s; };
+        const unique = new Set();
+        const data = [];
+        for (let i = 0; i < cnt; i++) {
+          const t = Number(params.type);
+          if (t === 0 || t === 5) data.push(t === 5 ? (r1 + Math.random() * (r2 - r1)).toFixed(6) : String(Math.floor(r1 + Math.random() * (r2 - r1))));
+          else if (t === 1) { let v; do { v = Math.floor(r1 + Math.random() * (r2 - r1 + 1)); } while (unique.has(v) && unique.size < (r2 - r1 + 1)); unique.add(v); data.push(String(v)); }
+          else if (t === 6) { const d = new Date(2000 + Math.floor(Math.random() * 31), Math.floor(Math.random() * 12), 1 + Math.floor(Math.random() * 28), Math.floor(Math.random() * 24), Math.floor(Math.random() * 60), Math.floor(Math.random() * 60)); data.push(d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0') + ' ' + String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0') + ':' + String(d.getSeconds()).padStart(2, '0')); }
+          else data.push(rs(len));
+        }
+        if (params.writeCount === false && !vars.length) { /* 无首行 */ } 
+        lines = lines.concat([data.join(' '), '']);
+        files.push({ name: id + '.in', content: lines.join('\n') });
+      }
+      LS.set('genfiles', LS.get('genfiles', []).concat(files.map((f) => f.name)));
+      const cache = LS.get('genPreviewCache', {});
+      files.forEach((f) => { cache[f.name] = f.content; });
+      LS.set('genPreviewCache', cache);
+      return { ok: true, message: '已生成 ' + files.length + ' 个文件（网页预览/下载）', files: files.map((f) => f.name), preview: files };
+    } catch (e) { return { ok: false, message: '生成失败：' + e.message }; }
+  },
+  async genGroup(groups, count) {
+    const files = [];
+    for (let g = 1; g <= Number(count); g++) {
+      const lines = [];
+      groups.forEach((grp) => {
+        const row = grp.fields.map((f) => {
+          const t = Number(f.type), r1 = Number(f.r1), r2 = Number(f.r2), len = Math.max(1, Number(f.r1) || 1);
+          if (t === 0) return String(Math.floor(r1 + Math.random() * (r2 - r1 + 1)));
+          if (t === 1) return String(Math.floor(r1 + Math.random() * (r2 - r1 + 1)));
+          const lower = 'abcdefghijklmnopqrstuvwxyz', upper = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+          const cs = [lower, upper, lower + upper + '0123456789'][Math.min(4, t) - 2] || lower + upper + '0123456789';
+          let s = ''; for (let i = 0; i < len; i++) s += cs[Math.floor(Math.random() * cs.length)];
+          return s;
+        });
+        lines.push(row.join(' '));
+      });
+      files.push({ name: 'group_' + g + '.in', content: lines.join('\n') + '\n' });
+    }
+    LS.set('genfiles', LS.get('genfiles', []).concat(files.map((f) => f.name)));
+    return { ok: true, message: '已生成 ' + files.length + ' 个分组文件', files: files.map((f) => f.name), preview: files };
+  },
+  async preview() {
+    const names = LS.get('genfiles', []);
+    const stored = LS.get('genPreviewCache', {});
+    return names.slice(-20).map((n) => ({ name: n, content: stored[n] || '（内容不可用）' }));
+  },
+  async genFiles() { return LS.get('genfiles', []); },
+  async clearGen() { LS.set('genfiles', []); LS.set('genPreviewCache', {}); return { ok: true }; },
+  async exportCsv() {
+    const names = LS.get('genfiles', []);
+    const csv = '文件名,状态\n' + names.map((n) => n + ',已生成').join('\n');
+    downloadText('gen_export.csv', csv);
+    return { ok: true, message: '已导出 ' + names.length + ' 条' };
+  },
+  async stats() { return { inCount: LS.get('genfiles', []).length, outCount: 0 }; },
+  async renameAll() { return { ok: false, message: '网页模式不支持批量重命名（Qt 桌面版可用）' }; },
+  async bigFile() { return { ok: false, message: '网页模式不支持写大文件（Qt 桌面版可用）' }; },
+  async changeExt() { return { ok: false, message: '网页模式不支持改扩展名（Qt 桌面版可用）' }; },
+  async makeTsDir() {
+    try {
+      var j = await post('/api/maketsdir', {});
+      if (j && j.ok && j.dir) return j.dir;
+    } catch (e) {}
+    const d = new Date();
+    const ts = [d.getFullYear(), String(d.getMonth() + 1).padStart(2, '0'), String(d.getDate()).padStart(2, '0')].join('') + '_' + [String(d.getHours()).padStart(2, '0'), String(d.getMinutes()).padStart(2, '0'), String(d.getSeconds()).padStart(2, '0')].join('');
+    const base = (window.info && window.info.desktop) || '';
+    return base ? (base.replace(/[\\/]+$/, '') + '\\' + ts) : ts;
+  },
+  async manSave(name, content) {
+    downloadText((name || 'example') + '.in', content);
+    LS.set('genfiles', LS.get('genfiles', []).concat((name || 'example') + '.in'));
+    return { ok: true, message: '已下载 ' + name + '.in' };
+  },
+  /* 通用文本文件读写（网页模式：下载 / 打开） */
+  async saveTextFile(defaultName, content) {
+    downloadText(defaultName || 'file.txt', content);
+    return { ok: true, message: '已下载 ' + defaultName };
+  },
+  async openTextFile() {
+    return new Promise((resolve) => {
+      const input = document.createElement('input'); input.type = 'file';
+      input.onchange = () => {
+        const f = input.files[0]; if (!f) return resolve({ ok: false, message: '未选择文件' });
+        const rd = new FileReader();
+        rd.onload = () => resolve({ ok: true, message: '已读取 ' + f.name, content: String(rd.result) });
+        rd.readAsText(f);
+      };
+      input.click();
+    });
+  },
+
+  /* ---- 编译 / 打包 / 工具（网页模式提示） ---- */
+  async compileBatch() { return { ok: false, output: '网页模式不支持本地编译，请使用 Qt 桌面版' }; },
+  async compileSingle() { return { ok: false, output: '网页模式不支持本地编译，请使用 Qt 桌面版' }; },
+  async autoGpp() { return ''; },
+  async packZip() { return { ok: false, message: '网页模式不支持本地打包，请使用 Qt 桌面版' }; },
+  async runTool() { return false; },
+  /* 生成函数库 / 生成器代码模式：C++ 后端才有，网页模式给空结果（必须有桩！缺桩会让 bind() 抛错中断） */
+  async genlib() { return { ok: false, available: false, name: 'CDCSCQ', header: '#include <cdcscq.hpp>', dir: '', demo: '', groups: [] }; },
+  async genRun() { return { ok: false, message: '当前模式不支持生成器代码运行' }; },
+  async openUrl(url) { window.open(url, '_blank'); return true; },
+  async browseFile() { return ''; },
+  async browseFolder() { return ''; },
+
+  /* ---- 设置 ---- */
+  async setTheme(t) { LS.set('theme', t); },
+  async getTheme() { return LS.get('theme', 'default'); },
+  async setGpp() {},
+  async getGpp() { return ''; },
+  async setOutDir() {},
+  async getOutDir() { return '桌面'; },
+  async setServer(u) { LS.set('server', (u || '').trim().replace(/\/+$/, '')); },
+  async getServer() { return LS.get('server', ''); },
+  async setAiConf(key, model, base) { LS.set('ai', { key: (key || '').trim(), model: (model || 'qwen-plus').trim(), base: (base || 'https://dashscope.aliyuncs.com/compatible-mode/v1').trim() }); },
+  async getAiConf() { return LS.get('ai', {}); },
+  async checkUpdate() {
+    try { const r = await cloudCall({ op: 'version' }); if (r.version && r.version !== '7.1.0') return { hasUpdate: true, version: r.version, url: r.url || '', notice: r.notice || '' }; } catch (e) {}
+    return { hasUpdate: false, version: '7.1.0' };
+  },
+
+  /* ---- 自动更新（网页模式没有本地后端，下不了包也装不了）---- */
+  async updateCheck() { return { ok: false, supported: false, message: '网页模式不支持自动更新，请到官网下载最新版' }; },
+  async updateDownload() { return { ok: false, supported: false }; },
+  async updateStatus() { return { ok: false, supported: false, state: 'idle' }; },
+  async updateLaunch() { return { ok: false, supported: false }; },
+  async installed() { return { ok: false, supported: false, installed: false }; },
+};
+
+/* ---------------- Qt 模式包装 ---------------- */
+function qtCall(method, args) {
+  return new Promise((resolve, reject) => {
+    try {
+      if (!qtBridge || typeof qtBridge[method] !== 'function') return reject(new Error('桥接方法不可用：' + method));
+      const r = qtBridge[method].apply(qtBridge, args || []);
+      resolve(r);
+    } catch (e) { reject(e); }
+  });
+}
+
+/* ---------------- 统一初始化 ---------------- */
+function buildApi() {
+  if (MODE === 'qt') {
+    api = new Proxy({}, {
+      get(t, prop) {
+        if (typeof prop !== 'string') return undefined;
+        if (prop in t) return t[prop];          // 显式覆盖（如 register 别名）
+        return (...args) => qtCall(prop, args);
+      },
+    });
+    // QWebChannel 暴露的 C++ 方法名是 reg（register 是保留字）
+    api.register = (u, p) => qtCall('reg', [u, p]);
+  } else {
+    api = new Proxy(webBridge, {
+      get(t, prop) {
+        if (typeof prop !== 'string') return undefined;
+        // then/catch/finally 绝不能返回函数，否则 api 会被当成 thenable（await api 会死循环）
+        if (prop === 'then' || prop === 'catch' || prop === 'finally') return undefined;
+        const v = t[prop];
+        if (typeof v === 'function') return v.bind(t);
+        if (v !== undefined) return v;
+        // 兜底：未实现的接口返回安全空函数。
+        // 【2026-09-23 事故】以前这里直接返回 undefined，bind() 里任何一次
+        // api.xxx() 调用（当时是 genlib）都会抛 "xxx is not a function"，
+        // 把 bind() 从中途打断 → 后面「实用工具」网格、「主题」网格全都渲染不出来。
+        return async function () { return { ok: false, supported: false, message: '当前模式未实现：' + prop }; };
+      },
+    });
+  }
+}
+
+/* ============================================================
+   通用小工具（纯 JS 计算）
+   ============================================================ */
+function md5(text) {
+  const s = String(text || '');
+  const rotl = (x, c) => (x << c) | (x >>> (32 - c));
+  const byte2hex = [];
+  for (let i = 0; i < 256; i++) { let h = i.toString(16); if (h.length === 1) h = '0' + h; byte2hex[i] = h; }
+  const u = unescape(encodeURIComponent(s));
+  const b = []; for (let i = 0; i < u.length; i++) b.push(u.charCodeAt(i));
+  b.push(0x80);
+  while (b.length % 64 !== 56) b.push(0);
+  const bits = u.length * 8; for (let i = 0; i < 8; i++) b.push((bits >>> (i * 8)) & 0xFF);
+  let a0 = 0x67452301, b0 = 0xefcdab89, c0 = 0x98badcfe, d0 = 0x10325476;
+  const K = [0xd76aa478,0xe8c7b756,0x242070db,0xc1bdceee,0xf57c0faf,0x4787c62a,0xa8304613,0xfd469501,0x698098d8,0x8b44f7af,0xffff5bb1,0x895cd7be,0x6b901122,0xfd987193,0xa679438e,0x49b40821,0xf61e2562,0xc040b340,0x265e5a51,0xe9b6c7aa,0xd62f105d,0x02441453,0xd8a1e681,0xe7d3fbc8,0x21e1cde6,0xc33707d6,0xf4d50d87,0x455a14ed,0xa9e3e905,0xfcefa3f8,0x676f02d9,0x8d2a4c8a,0xfffa3942,0x8771f681,0x6d9d6122,0xfde5380c,0xa4beea44,0x4bdecfa9,0xf6bb4b60,0xbebfbc70,0x289b7ec6,0xeaa127fa,0xd4ef3085,0x04881d05,0xd9d4d039,0xe6db99e5,0x1fa27cf8,0xc4ac5665,0xf4292244,0x432aff97,0xab9423a7,0xfc93a039,0x655b59c3,0x8f0ccc92,0xffeff47d,0x85845dd1,0x6fa87e4f,0xfe2ce6e0,0xa3014314,0x4e0811a1,0xf7537e82,0xbd3af235,0x2ad7d2bb,0xeb86d391];
+  const S = [7,12,17,22,7,12,17,22,7,12,17,22,7,12,17,22,5,9,14,20,5,9,14,20,5,9,14,20,5,9,14,20,4,11,16,23,4,11,16,23,4,11,16,23,4,11,16,23,6,10,15,21,6,10,15,21,6,10,15,21,6,10,15,21];
+  for (let i = 0; i < b.length; i += 64) {
+    const M = []; for (let j = 0; j < 16; j++) { M[j] = b[i + j * 4] | (b[i + j * 4 + 1] << 8) | (b[i + j * 4 + 2] << 16) | (b[i + j * 4 + 3] << 24); }
+    let A = a0, B = b0, C = c0, D = d0;
+    for (let j = 0; j < 64; j++) {
+      let F, g;
+      if (j < 16) { F = (B & C) | (~B & D); g = j; }
+      else if (j < 32) { F = (D & B) | (~D & C); g = (5 * j + 1) % 16; }
+      else if (j < 48) { F = B ^ C ^ D; g = (3 * j + 5) % 16; }
+      else { F = C ^ (B | ~D); g = (7 * j) % 16; }
+      const tmp = D; D = C; C = B;
+      const sum = (A + F + K[j] + M[g]) | 0;
+      B = (B + rotl(sum, S[j])) | 0; A = tmp;
+    }
+    a0 = (a0 + A) | 0; b0 = (b0 + B) | 0; c0 = (c0 + C) | 0; d0 = (d0 + D) | 0;
+  }
+  const hex = (n) => { const h = (n >>> 0).toString(16); return '00000000'.slice(h.length) + h; };
+  return hex(a0) + hex(b0) + hex(c0) + hex(d0);
+}
+function b64Encode(s) { try { return btoa(unescape(encodeURIComponent(s))); } catch (e) { return ''; } }
+function b64Decode(s) { try { return decodeURIComponent(escape(atob(String(s).replace(/\s/g, '')))); } catch (e) { return '（解码失败：Base64 内容无效）'; } }
+function jsonFormat(s) { try { return JSON.stringify(JSON.parse(s), null, 2); } catch (e) { return 'JSON 解析失败：' + e.message; } }
+function genPassword(len) {
+  const cs = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()-_=+';
+  let s = ''; for (let i = 0; i < (len || 16); i++) s += cs[Math.floor(Math.random() * cs.length)];
+  return s;
+}
+function downloadText(name, content) {
+  const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob); a.download = name;
+  document.body.appendChild(a); a.click();
+  setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 400);
+}
+
+/* Markdown + LaTeX 渲染（AI 回复用）
+   ============================================================
+   真正的实现搬到了 md/cdc_md_render.js（开源栈，全部内联在 <head> 里）：
+     markdown-it 14.1.0          MIT   Markdown 解析（含 GFM 表格）
+     KaTeX 0.16.22               MIT   LaTeX 渲染
+     markdown-it-texmath 1.0.0   MIT   $..$ / $$..$$ / \(..\) / \[..\]
+   ↑ 内联块由 `python cdc_app/md/build_md_assets.py` 生成，改渲染逻辑请改那个 js。
+
+   为什么换掉旧实现：旧的是手写正则替换，`\n` 一律变 <br>（把代码块也打断了），
+   且完全不认表格、引用、分隔线，LaTeX 更是原样吐出来——所以 AI 一输出公式/表格就"爆"。
+   ============================================================ */
+function mdToHtml(md) {
+  const text = String(md == null ? '' : md);
+  if (window.cdcRenderMd) {
+    try { return cdcRenderMd(text); } catch (e) { console.warn('cdcRenderMd failed', e); }
+  }
+  return '<pre class="md-fallback">' + esc(text) + '</pre>';
+}
+
+/* ============================================================
+   页面逻辑
+   ============================================================ */
+const state = { user: '', isAdmin: false, server: '', gpp: '', theme: 'default', mode: MODE, peer: '' };
+
+function setModeChip() {
+  $('#modeChip').textContent = MODE === 'qt' ? '⚡ Qt 桌面' : '🌐 网页后端';
+  $('#aboutBackend').textContent = MODE === 'qt' ? 'C++ Bridge（Qt + WebChannel）' : 'C++ 后端 + 内嵌前端（Web 模式）';
+  $('#aboutMode').textContent = MODE === 'qt' ? 'Qt 桌面版（全功能）' : '网页后端版（编译 / 数据生成 / 函数库全功能）';
+  if (MODE === 'web') $('#toolsDesc').textContent = '系统工具需 Qt 桌面版；网页后端版提供计算类与在线工具。';
+}
+
+function switchPage(page) {
+  $$('.nav-item').forEach((b) => b.classList.toggle('active', b.dataset.page === page));
+  $$('.page').forEach((p) => p.classList.toggle('active', p.dataset.page === page));
+  const titles = { gen: '数据生成', compile: '自编译', zip: '打包工具', tools: '实用工具', account: '账号中心', msg: '私信', ai: 'AI 助手', settings: '设置' };
+  $('#pageTitle').textContent = titles[page] || '';
+  if (page === 'msg') refreshContacts();
+  if (page === 'ai') refreshAiQuota();
+  if (page === 'account') refreshAccountPage();
+  if (page === 'settings') refreshSettings();
+}
+
+/* ---------- 主题 / 毛玻璃 ---------- */
+function applyTheme(theme) {
+  const t = THEMES.some((x) => x.name === theme) ? theme : 'default';
+  document.documentElement.dataset.theme = t;
+  $$('.theme-chip').forEach((c) => c.classList.toggle('active', c.dataset.theme === t));
+  // 恢复用户自定义配色（若有）
+  try {
+    const a1 = localStorage.getItem('cdc_cust_accent') || '';
+    const a2 = localStorage.getItem('cdc_cust_accent2') || '';
+    applyCustomColors(a1, a2);
+    if (a1) {
+      const e1 = $('#custAccent'); const e2 = $('#custAccent2');
+      if (e1) e1.value = a1; if (e2) e2.value = a2 || a1;
+    }
+  } catch (e) {}
+}
+
+/* 自定义配色：覆盖 CSS 变量（传空串则恢复预设） */
+function applyCustomColors(a1, a2) {
+  const st = document.documentElement.style;
+  if (!a1) {
+    ['--accent', '--accent2', '--accent3', '--accent-mid', '--accent-soft'].forEach((k) => st.removeProperty(k));
+    return;
+  }
+  const b2 = a2 || a1;
+  let r = 138, g = 180, b = 255;
+  try {
+    let h = a1.replace('#', '');
+    if (h.length === 3) h = h.split('').map((c) => c + c).join('');
+    r = parseInt(h.slice(0, 2), 16); g = parseInt(h.slice(2, 4), 16); b = parseInt(h.slice(4, 6), 16);
+  } catch (e) {}
+  st.setProperty('--accent', a1);
+  st.setProperty('--accent2', b2);
+  st.setProperty('--accent3', b2);
+  st.setProperty('--accent-mid', a1);
+  st.setProperty('--accent-soft', 'rgba(' + r + ',' + g + ',' + b + ',.14)');
+}
+
+function setFrost(on) {
+  document.body.classList.toggle('frosted', on);
+  $('#setFrosted').checked = on;
+  try { localStorage.setItem('cdc_frost', on ? '1' : '0'); } catch (e) {}
+}
+
+/* ---------- 登录 ---------- */
+let authMode = 'login';
+function setAuthMode(m) {
+  authMode = m;
+  $('#tabLogin').classList.toggle('on', m === 'login');
+  $('#tabReg').classList.toggle('on', m === 'register');
+  $('#btnAuth').textContent = m === 'login' ? '登录' : '注册';
+  $('#authHint').textContent = '';
+}
+async function doAuth() {
+  const user = $('#authUser').value.trim(), pass = $('#authPass').value;
+  if (!user || !pass) { $('#authHint').textContent = '请输入用户名和密码'; return; }
+  const btn = $('#btnAuth'); btn.disabled = true;
+  try {
+    if (authMode === 'login') {
+      const r = await api.login(user, pass);
+      if (r.ok) { afterLogin(r); } else { $('#authHint').textContent = r.message || '登录失败'; }
+    } else {
+      const r = await api.register(user, pass);
+      if (r.ok) { toast(r.message, 'ok'); setAuthMode('login'); $('#authPass').value = ''; }
+      else $('#authHint').textContent = r.message || '注册失败';
+    }
+  } catch (e) { $('#authHint').textContent = e.message; }
+  btn.disabled = false;
+}
+function afterLogin(r) {
+  state.user = r.user || r.message || state.user;
+  state.isAdmin = !!r.isAdmin;
+  $('#overlay').classList.remove('show');
+  toast('欢迎，' + state.user, 'ok');
+  applyUserUI(); refreshAccountPage(); refreshUnread();
+}
+function applyUserUI() {
+  const u = state.user || '未登录';
+  $('#footUser').textContent = u;
+  $('#chipName').textContent = u;
+  $('#footRole').textContent = state.isAdmin ? '管理员' : (state.user ? '已登录' : '点击右上角登录');
+  $('#chipAv').textContent = (state.user || '?').slice(0, 1).toUpperCase();
+  if (state.user) {
+    $('#accLoginCard').style.display = 'none';
+    $('#accInfoCard').style.display = '';
+    $('#accNotifCard').style.display = state.isAdmin ? '' : 'none';
+    $('#accName').textContent = state.user;
+    $('#accRole').textContent = state.isAdmin ? '管理员' : '普通用户';
+  } else {
+    $('#accLoginCard').style.display = '';
+    $('#accInfoCard').style.display = 'none';
+    $('#accNotifCard').style.display = 'none';
+  }
+  if (state.isAdmin) $('#notifList') && renderNotifs();
+}
+
+/* ---------- 私信 ---------- */
+// 通讯录 = 只有和我有过消息往来的人（对方先给我发消息才会成为"好友"），
+// 按最后一条消息时间倒序，每人右侧显示未读数徽标。
+// 全部用户列表缓存：搜索框边打字边过滤用（5 分钟内不重复拉取，避免狂打云端接口）
+let allUsersCache = { at: 0, list: [] };
+async function getAllUsers() {
+  if (allUsersCache.list.length && Date.now() - allUsersCache.at < 300000) return allUsersCache.list;
+  const list = await api.getUsers().catch(() => []);
+  if (list && list.length) allUsersCache = { at: Date.now(), list };
+  return allUsersCache.list;
+}
+// 按输入字符实时过滤用户，命中直接列出（点击即开聊）；带该用户的未读徽标
+async function renderSearchResults(q) {
+  const box = $('#contactList');
+  const kw = String(q || '').trim().toLowerCase();
+  if (!kw) { refreshContacts(); return; }
+  if (!state.user) { box.innerHTML = '<div class="muted center">请先登录</div>'; return; }
+  const users = await getAllUsers();
+  const hits = users.filter((u) => String(u).toLowerCase().includes(kw)).slice(0, 40);
+  let peers = [];
+  try { peers = await api.msgPeers(); } catch (e) {}
+  const unreadOf = {};
+  peers.forEach((p) => { unreadOf[String(p.name).toLowerCase()] = p.unread; });
+  box.innerHTML = '';
+  const head = document.createElement('div');
+  head.className = 'search-head';
+  head.textContent = hits.length
+    ? ('匹配到 ' + hits.length + ' 位用户 · 点击开聊')
+    : ('未找到「' + kw + '」· 可按「打开」直接开聊');
+  box.appendChild(head);
+  hits.forEach((name) => {
+    const d = document.createElement('div');
+    d.className = 'contact' + (name === state.peer ? ' active' : '');
+    d.dataset.peer = name;
+    const un = unreadOf[String(name).toLowerCase()] || 0;
+    d.innerHTML = '<span class="dot"></span><span class="cname">' + esc(name) + '</span>'
+      + (un > 0 ? '<span class="unread-badge" title="未读消息">' + (un > 99 ? '99+' : un) + '</span>' : '');
+    d.onclick = () => { state.peer = name; selectPeer(name); };
+    box.appendChild(d);
+  });
+}
+async function refreshContacts() {
+  if (!state.user) { $('#contactList').innerHTML = '<div class="muted center">请先登录</div>'; return; }
+  // 搜索框有内容时，列表显示搜索结果（不被 20s 轮询覆盖）
+  const kw = ($('#msgSearch') && $('#msgSearch').value || '').trim();
+  if (kw) { await renderSearchResults(kw); return; }
+  const box = $('#contactList'); box.innerHTML = '';
+  let peers = [];
+  try { peers = await api.msgPeers(); } catch (e) {}
+  if (!peers.length) {
+    box.innerHTML = '<div class="muted center">还没有人给你发过消息<br>对方先发一条才会出现在这里；<br>也可在上方输入用户名主动开聊</div>';
+  }
+  peers.forEach((p) => {
+    const d = document.createElement('div');
+    d.className = 'contact' + (p.name === state.peer ? ' active' : '');
+    d.dataset.peer = p.name;
+    d.innerHTML = '<span class="dot"></span><span class="cname">' + esc(p.name) + '</span>'
+      + (p.unread > 0 ? '<span class="unread-badge" title="未读消息">' + (p.unread > 99 ? '99+' : p.unread) + '</span>' : '');
+    d.onclick = () => { state.peer = p.name; selectPeer(p.name); };
+    box.appendChild(d);
+  });
+}
+async function selectPeer(peer) {
+  state.peer = peer;
+  $('#msgPeerTitle').textContent = '与 ' + peer + ' 的对话';
+  $$('.contact').forEach((c) => c.classList.toggle('active', c.dataset.peer === peer));
+  const msgs = await api.getConv(peer).catch(() => []);
+  const log = $('#msgLog'); log.innerHTML = '';
+  if (!msgs.length) log.innerHTML = '<div class="muted center">还没有消息</div>';
+  msgs.forEach((m) => {
+    const me = m.from === state.user;
+    const d = document.createElement('div');
+    d.className = 'bubble ' + (me ? 'me' : 'bot');
+    d.textContent = m.content;
+    log.appendChild(d);
+  });
+  log.scrollTop = log.scrollHeight;
+  api.markRead(peer).catch(() => {});
+  refreshUnread();
+}
+async function sendMsg() {
+  const txt = $('#msgText').value.trim();
+  if (!state.peer) { toast('请先选择联系人', 'warn'); return; }
+  if (!txt) return;
+  const r = await api.sendMsg(state.peer, txt).catch(() => ({ ok: false, message: '发送失败' }));
+  if (r.ok) {
+    $('#msgText').value = '';
+    const log = $('#msgLog');
+    const d = document.createElement('div'); d.className = 'bubble me'; d.textContent = txt;
+    log.appendChild(d); log.scrollTop = log.scrollHeight;
+    refreshContacts();   // 我发出的会话也会进入通讯录列表
+  } else toast(r.message || '发送失败', 'err');
+}
+async function refreshUnread() {
+  if (!state.user) { $('#navUnread').style.display = 'none'; return; }
+  try {
+    const n = await api.unread();
+    $('#navUnread').style.display = n > 0 ? '' : 'none';
+    $('#navUnread').textContent = n > 99 ? '99+' : n;
+  } catch (e) {}
+  // 顺便刷新通讯录里每个人的未读徽标
+  if (typeof refreshContacts === 'function') refreshContacts();
+}
+
+/* ---------- AI ---------- */
+let aiWaiting = false;
+async function sendAi() {
+  const txt = $('#aiInput').value.trim();
+  if (!txt || aiWaiting) return;
+  aiWaiting = true;
+  addBubble('me', txt);
+  $('#aiInput').value = '';
+  const wait = addBubble('bot', '思考中…');
+  const r = await api.aiChat(txt).catch((e) => ({ ok: false, reply: '⚠️ ' + e.message }));
+  wait.innerHTML = r.ok ? mdToHtml(r.reply) : mdToHtml(r.reply || '请求失败');
+  $('#aiLog').scrollTop = $('#aiLog').scrollHeight;
+  aiWaiting = false;
+  if (r.left != null) $('#aiQuota').textContent = r.left < 0 ? '自备 Key 无限' : '剩余 ' + r.left + ' 次';
+  const m = await api.aiQuota().catch(() => ({}));
+  if (m.mode) $('#aiMode').textContent = { server: '服务器模式', key: '自备 Key', none: '未配置' }[m.mode] || m.mode;
+}
+function addBubble(who, text) {
+  const log = $('#aiLog');
+  const b = document.createElement('div');
+  // bot 气泡加 .md：样式里要关掉 .bubble 的 white-space:pre-wrap，
+  // 否则 Markdown 渲染出的 HTML 每个源码换行都会变成一个真实空行，整条消息被撑散。
+  b.className = 'bubble ' + who + (who === 'bot' ? ' md' : '');
+  b.textContent = text;
+  log.appendChild(b);
+  log.scrollTop = log.scrollHeight;
+  return b;
+}
+async function refreshAiQuota() {
+  const q = await api.aiQuota().catch(() => ({}));
+  $('#aiQuota').textContent = q.mode === 'key' ? '自备 Key · 无限' : (q.left == null ? '剩余 -- 次' : '剩余 ' + q.left + ' 次');
+  $('#aiMode').textContent = { server: '服务器模式', key: '自备 Key', none: '未配置' }[q.mode] || '--';
+}
+
+/* ---------- 数据生成 ---------- */
+function toggleGenFields() {
+  const t = $('#genType').value;
+  const isStr = ['2', '3', '4'].includes(t);
+  $('#labRange1').style.display = isStr ? 'none' : '';
+  $('#labRange2').style.display = isStr ? 'none' : '';
+  $('#labStrLen').style.display = isStr ? '' : 'none';
+  if (isStr) { $('#labRange1').style.display = 'none'; $('#labRange2').style.display = 'none'; $('#labStrLen').style.display = ''; }
+}
+function genLogLine(msg) { $('#genLog').textContent += msg + '\n'; $('#genLog').scrollTop = $('#genLog').scrollHeight; }
+async function runGen() {
+  const params = {
+    startId: Number($('#genStart').value), endId: Number($('#genEnd').value),
+    type: Number($('#genType').value), range1: Number($('#genR1').value), range2: Number($('#genR2').value),
+    strLen: Number($('#genStrLen').value), count: Number($('#genCount').value),
+    writeCount: $('#genWriteCnt').checked, extraVars: $('#genExtra').value,
+    customCharset: $('#genCharset').value.trim(), outDir: $('#genOutDir').value,
+  };
+  genLogLine('▶ 生成 ' + params.startId + ' ~ ' + params.endId + '（类型 ' + params.type + '）…');
+  const btn = $('#genRun'); btn.disabled = true;
+  try {
+    const r = await api.gen(params);
+    genLogLine((r.ok ? '✔ ' : '✘ ') + (r.message || ''));
+    if (r.ok && r.preview) showGenFiles(r.preview);
+    else if (r.ok) renderGenFileNames(r.files || []);
+    if (!r.ok) toast(r.message, 'err');
+  } catch (e) { genLogLine('✘ ' + e.message); toast(e.message, 'err'); }
+  btn.disabled = false;
+}
+function showGenFiles(files) {
+  const box = $('#genFiles');
+  box.innerHTML = '<div class="gen-files-title">已生成 ' + files.length + ' 个文件（网页模式可下载）：</div>' +
+    files.map((f) => '<div class="gen-file"><span>' + esc(f.name) + '</span><button class="btn btn-sm" data-dl="' + esc(f.name) + '">下载</button></div>').join('');
+  box.querySelectorAll('[data-dl]').forEach((b) => {
+    b.onclick = () => {
+      const f = files.find((x) => x.name === b.dataset.dl);
+      if (f) downloadText(f.name, f.content);
+    };
+  });
+  box.style.display = '';
+}
+function renderGenFileNames(names) {
+  const box = $('#genFiles');
+  box.innerHTML = '<div class="gen-files-title">已生成 ' + names.length + ' 个文件：</div>' + names.map((n) => '<div class="gen-file"><span>' + esc(n) + '</span></div>').join('');
+  box.style.display = '';
+}
+async function previewGen() {
+  const r = await api.preview().catch(() => ({ ok: false }));
+  const box = $('#genPreview'); box.style.display = 'block';
+  const files = r.preview || r || [];
+  if (!files.length) { box.innerHTML = '<div class="muted">还没有生成结果</div>'; return; }
+  box.innerHTML = files.map((f) => '<div class="pf"><div class="fn">' + esc(f.name) + '</div><pre>' + esc((f.content || '').slice(0, 2000)) + '</pre></div>').join('');
+}
+
+function genCfgIni() {
+  return '[Settings]\n' +
+    'Start=' + $('#genStart').value + '\n' +
+    'End=' + $('#genEnd').value + '\n' +
+    'Count=' + $('#genCount').value + '\n' +
+    'Range1=' + $('#genR1').value + '\n' +
+    'Range2=' + $('#genR2').value + '\n' +
+    'StrLen=' + $('#genStrLen').value + '\n' +
+    'Type=' + $('#genType').value + '\n';
+}
+function applyCfgIni(txt) {
+  const g = (k) => { const m = String(txt || '').match(new RegExp('^' + k + '=(.*)$', 'm')); return m ? m[1].trim() : null; };
+  if (g('start')) $('#genStart').value = g('start');
+  if (g('end')) $('#genEnd').value = g('end');
+  if (g('count')) $('#genCount').value = g('count');
+  if (g('range1')) $('#genR1').value = g('range1');
+  if (g('range2')) $('#genR2').value = g('range2');
+  if (g('strlen')) $('#genStrLen').value = g('strlen');
+  if (g('type')) $('#genType').value = g('type');
+}
+async function saveGenCfg() {
+  const r = await api.saveTextFile('cdc_gen_cfg.ini', genCfgIni()).catch((e) => ({ ok: false, message: e.message }));
+  toast(r.message || (r.ok ? '已保存' : '保存失败'), r.ok ? 'ok' : 'err');
+}
+async function loadGenCfg() {
+  const r = await api.openTextFile().catch((e) => ({ ok: false, message: e.message }));
+  if (!r.ok) { toast(r.message || '已取消', 'warn'); return; }
+  applyCfgIni(r.content);
+  toast('配置已加载', 'ok');
+}
+
+/* ---------- 分组生成 ---------- */
+let groups = [];
+function loadGroups() { groups = LS.get('groups', []); if (!groups.length) { groups = [{ fields: [{ name: '字段1', type: 2, r1: 1, r2: 10 }, { name: '字段2', type: 0, r1: 1, r2: 999999 }] }]; } }
+function renderGroups() {
+  const box = $('#groupBox'); box.innerHTML = '';
+  if (!groups.length) { box.innerHTML = '<div class="muted">还没有分组，点「+ 添加组」创建</div>'; return; }
+  groups.forEach((grp, gi) => {
+    const g = document.createElement('div');
+    g.className = 'group-card';
+    let html = '<div class="group-head">组 ' + (gi + 1) + ' <button class="btn btn-sm" data-grm="' + gi + '">- 删除组</button></div>';
+    grp.fields.forEach((f, fi) => {
+      html += '<div class="group-field">' +
+        '<input type="text" value="' + esc(f.name) + '" data-gf="' + gi + ',' + fi + ',name" placeholder="字段名">' +
+        '<select data-gf="' + gi + ',' + fi + ',type">' +
+        ['整数(随机)', '整数(不重复)', '小写字母', '大写字母', '混合字母'].map((o, i) => '<option value="' + i + '"' + (Number(f.type) === i ? ' selected' : '') + '>' + o + '</option>').join('') +
+        '</select>' +
+        '<input type="number" value="' + esc(f.r1) + '" data-gf="' + gi + ',' + fi + ',r1" title="范围起/字符串长度">' +
+        '<input type="number" value="' + esc(f.r2) + '" data-gf="' + gi + ',' + fi + ',r2" title="范围止">' +
+        '<button class="btn btn-sm danger" data-gfr="' + gi + ',' + fi + '">×</button></div>';
+    });
+    html += '<div class="group-foot"><button class="btn btn-sm" data-gfa="' + gi + '">+ 字段</button></div>';
+    g.innerHTML = html;
+    box.appendChild(g);
+  });
+  box.querySelectorAll('[data-gf]').forEach((el) => {
+    el.onchange = () => {
+      const [gi, fi, k] = el.dataset.gf.split(',');
+      groups[Number(gi)].fields[Number(fi)][k] = el.value;
+      saveGroups();
+    };
+  });
+  box.querySelectorAll('[data-grm]').forEach((b) => { b.onclick = () => { groups.splice(Number(b.dataset.grm), 1); saveGroups(); renderGroups(); }; });
+  box.querySelectorAll('[data-gfr]').forEach((b) => { b.onclick = () => { const [gi, fi] = b.dataset.gfr.split(','); groups[Number(gi)].fields.splice(Number(fi), 1); saveGroups(); renderGroups(); }; });
+  box.querySelectorAll('[data-gfa]').forEach((b) => { b.onclick = () => { const gi = Number(b.dataset.gfa); groups[gi].fields.push({ name: 'F' + (groups[gi].fields.length + 1), type: 0, r1: 1, r2: 100 }); saveGroups(); renderGroups(); }; });
+}
+function saveGroups() { LS.set('groups', groups); }
+async function runGroups() {
+  if (!groups.length) { toast('请先添加分组', 'warn'); return; }
+  const count = Number($('#grpCount').value) || 1;
+  const r = await api.genGroup(groups, count).catch((e) => ({ ok: false, message: e.message }));
+  $('#grpLog').textContent += (r.ok ? '✔ ' : '✘ ') + (r.message || '') + '\n';
+  if (r.ok && r.preview) showGenFiles(r.preview);
+  toast(r.ok ? '分组生成完成' : '分组生成失败', r.ok ? 'ok' : 'err');
+}
+
+/* ---------- 工具 ---------- */
+function buildTools() {
+  const grid = $('#toolGrid'); grid.innerHTML = '';
+  TOOLS.forEach((t) => {
+    const b = document.createElement('button');
+    b.className = 'tool-btn';
+    b.innerHTML = '<span class="ti">' + t.icon + '</span><span>' + t.label + '</span>';
+    b.onclick = () => onTool(t);
+    grid.appendChild(b);
+  });
+}
+function openModal(title, html) {
+  $('#modalTitle').textContent = title;
+  $('#modalBody').innerHTML = html;
+  $('#modal').classList.add('show');
+}
+function onTool(t) {
+  if (t.kind === 'tool') {
+    if (MODE === 'qt') { api.runTool(t.cmd).then((ok) => toast(ok ? '已启动：' + t.label : '启动失败：' + t.label, ok ? 'ok' : 'err')); }
+    else toast('「' + t.label + '」为系统工具，需 Qt 桌面版', 'warn');
+  } else if (t.kind === 'url') {
+    window.open(t.cmd, '_blank');
+  } else if (t.kind === 'prompt-url') {
+    const u = prompt('输入网址：'); if (u) window.open(/^https?:/.test(u) ? u : 'https://' + u, '_blank');
+  } else if (t.kind === 'prompt-qr') {
+    const v = prompt('二维码内容：'); if (v) openModal('二维码', '<img src="https://api.qrserver.com/v1/create-qr-code/?size=240x240&data=' + encodeURIComponent(v) + '" style="display:block;margin:0 auto">');
+  } else if (t.kind === 'prompt-shutdown') {
+    const s = prompt('定时关机（秒，0=取消）：'); if (s == null) return;
+    if (MODE === 'qt') { const n = Number(s); api.runTool(n > 0 ? 'shutdown -s -t ' + n : 'shutdown -a').then(() => toast(n > 0 ? '已设置 ' + n + ' 秒后关机' : '已取消定时关机', 'ok')); }
+    else toast('定时关机需 Qt 桌面版', 'warn');
+  } else if (t.kind === 'prompt-countdown') {
+    const s = Number(prompt('倒计时秒数：')); if (!s || s <= 0) return;
+    if (MODE === 'qt') { api.runTool('cmd /c timeout /t ' + s + ' && msg * 时间到！').then(() => toast('倒计时 ' + s + ' 秒已启动', 'ok')); }
+    else toast('倒计时需 Qt 桌面版', 'warn');
+  } else if (t.kind === 'calc') {
+    if (t.calc === 'password') openModal('密码生成', '<div class="kv"><span><b>长度</b></span><span><input type="number" id="pwLen" value="16" min="4" max="64"></span></div><button class="btn primary" id="pwGo">生成</button><pre class="log" id="pwOut" style="margin-top:10px"></pre>');
+    if (t.calc === 'md5') openModal('MD5 校验', '<textarea id="md5In" class="editor" style="min-height:80px" placeholder="输入文本…"></textarea><button class="btn primary" id="md5Go">计算 MD5</button><pre class="log" id="md5Out" style="margin-top:10px"></pre>');
+    if (t.calc === 'base64') openModal('Base64 编解码', '<textarea id="b64In" class="editor" style="min-height:80px" placeholder="输入文本…"></textarea><div class="tool-row"><button class="btn primary" id="b64Enc">编码</button><button class="btn" id="b64Dec">解码</button></div><pre class="log" id="b64Out" style="margin-top:10px"></pre>');
+    if (t.calc === 'json') openModal('JSON 格式化', '<textarea id="jsonIn" class="editor" style="min-height:140px" placeholder="粘贴 JSON…"></textarea><button class="btn primary" id="jsonGo">格式化</button><pre class="log" id="jsonOut" style="margin-top:10px"></pre>');
+    wireCalcModal(t.calc);
+  }
+}
+function wireCalcModal(kind) {
+  const go = (btnId, outId, fn) => {
+    const b = $(btnId); if (!b) return;
+    b.onclick = () => { const v = fn(); $(outId).textContent = v; };
+  };
+  if (kind === 'password') go('#pwGo', '#pwOut', () => genPassword(Number($('#pwLen').value) || 16));
+  if (kind === 'md5') go('#md5Go', '#md5Out', () => md5($('#md5In').value));
+  if (kind === 'base64') { go('#b64Enc', '#b64Out', () => b64Encode($('#b64In').value)); go('#b64Dec', '#b64Out', () => b64Decode($('#b64In').value)); }
+  if (kind === 'json') go('#jsonGo', '#jsonOut', () => jsonFormat($('#jsonIn').value));
+}
+
+/* ---------- GitHub 代理 ---------- */
+function ghBuild(pre, raw) {
+  let r = (raw || '').trim();
+  if (!r) r = 'https://github.com';
+  if (!/github\.(com|usercontent\.com|io)/.test(r)) return '';
+  let p = (pre || 'https://ghproxy.net/').trim();
+  if (!/\/$/.test(p)) p += '/';
+  return p + r;
+}
+function ghAction(copyOnly) {
+  const u = ghBuild($('#ghPre').value, $('#ghUrl').value);
+  if (!u) { toast('请输入有效的 GitHub 链接', 'err'); return; }
+  if (copyOnly) { navigator.clipboard.writeText(u).then(() => toast('已复制加速链接', 'ok')).catch(() => toast('复制失败', 'err')); return; }
+  window.open(u, '_blank');
+}
+
+/* ---------- 账号中心 ---------- */
+async function refreshAccountPage() {
+  applyUserUI();
+  if (state.user) {
+    const q = await api.aiQuota().catch(() => ({}));
+    $('#accQuota').textContent = q.mode === 'key' ? '自备 Key 无限' : ((q.left == null ? '--' : q.left) + ' 次');
+    renderNotifs();
+  }
+}
+async function renderNotifs() {
+  const notifs = await api.getNotifs().catch(() => []);
+  const box = $('#notifList'); box.innerHTML = '';
+  if (!notifs.length) { box.innerHTML = '<div class="muted">暂无公告</div>'; return; }
+  notifs.forEach((n) => {
+    const d = document.createElement('div');
+    d.className = 'notif-item';
+    d.innerHTML = '<div class="nt"><b>' + esc(n.title) + '</b><small>' + new Date(Number(n.time)).toLocaleString() + '</small></div>' +
+      '<div class="nc">' + esc(n.content) + ' <span class="muted">（' + esc(n.createdBy || '') + '）</span></div>' +
+      (state.isAdmin ? '<button class="btn btn-sm danger" data-ndel="' + esc(n.id) + '">删除</button>' : '');
+    box.appendChild(d);
+  });
+  box.querySelectorAll('[data-ndel]').forEach((b) => {
+    b.onclick = async () => { await api.delNotif(b.dataset.ndel).catch(() => {}); renderNotifs(); };
+  });
+}
+
+/* ---------- 设置 ---------- */
+async function refreshSettings() {
+  try {
+    const info = await api.getInfo();
+    $('#setGpp').value = info.gpp || '';
+    $('#setOutDir').value = info.outDir || '';
+    const ai = await api.getAiConf().catch(() => ({}));
+    $('#setAiKey').value = ai.key || '';
+    $('#setAiModel').value = ai.model || 'qwen-plus';
+    $('#setAiBase').value = ai.base || 'https://dashscope.aliyuncs.com/compatible-mode/v1';
+    applyTheme(info.theme || 'default');
+  } catch (e) {}
+}
+
+/* ---------- 自动更新 ----------
+   链路：打开软件 → 检查 update.json → 有新版立即弹窗
+        → 点「立即更新」→ 后端后台线程下载（进度条轮询）
+        → 下载完自动打开安装程序（后端按文件名特征 + 最新时间戳找到它）
+        → 若本机已安装，弹窗里先问「是否替换并保留配置」，勾选结果作为 /KEEPCFG=1 传给安装包 */
+const UPD = { info: null, timer: 0, phase: 'idle' };
+
+function updFmtSize(n) {
+  n = Number(n) || 0;
+  if (n <= 0) return '大小未知';
+  if (n < 1024) return n + ' B';
+  if (n < 1048576) return (n / 1024).toFixed(1) + ' KB';
+  if (n < 1073741824) return (n / 1048576).toFixed(2) + ' MB';
+  return (n / 1073741824).toFixed(2) + ' GB';
+}
+
+/* 弹更新窗 —— 三种状态都会弹（需求：每次打开 exe 就提醒）：
+     hasUpdate=true → 「发现新版本」，可下载 / 稍后
+     已是最新       → 「已是最新版本」，点「好的」关闭
+     manifest=false → 清单没拿到（云端未上传 / 断网），如实报出来 + 官网兜底
+   —— 绝不把「清单拿不到」伪装成「已是最新版本」：那会让真故障看起来像正常。 */
+function showUpdateModal(info) {
+  UPD.info = info || {};
+  UPD.phase = 'idle';
+  const m = $('#updModal');
+  if (!m) return;
+  const has = !!(info && info.hasUpdate);
+  const bad = !!(info && info.manifest === false);
+  const badge = $('#updBadge'), title = $('#updTitle'), go = $('#updGo'), later = $('#updLater');
+
+  $('#updProgWrap').style.display = 'none';
+  $('#updBar').style.width = '0%';
+  $('#updProgText').textContent = '准备下载…';
+  $('#updKeepWrap').style.display = 'none';
+  $('#updKeep').checked = true;
+  go.disabled = false;
+  if (later) later.style.display = '';
+
+  if (bad) {
+    UPD.phase = 'bad';
+    if (badge) badge.textContent = '⚠';
+    if (title) title.textContent = '更新检查未完成';
+    $('#updVer').textContent = '';
+    $('#updSub').textContent = '没能取到版本清单，可先到官网手动下载安装最新版。';
+    $('#updNotes').textContent = info.message || '更新信息不可用';
+    if (later) later.style.display = 'none';
+    go.textContent = '🌐 前往官网';
+    go.onclick = () => {
+      try { const p = api.openUrl(info.site || 'https://cdc.mjhcsp.xyz'); if (p && p.catch) p.catch(() => {}); } catch (e) {}
+      hideUpdateModal();
+    };
+    m.classList.add('show');
+    return;
+  }
+
+  if (!has) {
+    UPD.phase = 'latest';
+    if (badge) badge.textContent = '✓';
+    if (title) title.textContent = '已是最新版本';
+    $('#updVer').textContent = '';
+    $('#updSub').textContent = '当前版本 v' + (info.current || '7.1.0') + '，无需更新。';
+    $('#updNotes').textContent = info.notice && info.notice !== '已是最新版本。'
+      ? info.notice
+      : '你正在使用最新版本。有新版本发布时，这里会第一时间提示你。';
+    if (later) later.style.display = 'none';
+    go.textContent = '好的';
+    go.onclick = () => hideUpdateModal();
+    m.classList.add('show');
+    return;
+  }
+
+  if (badge) badge.textContent = '⬆';
+  if (title) title.textContent = '发现新版本';
+  $('#updVer').textContent = info.version || '';
+  $('#updSub').textContent = '当前版本 ' + (info.current || '7.1.0') +
+    ' → ' + (info.version || '') + ' · 安装包 ' + updFmtSize(info.size);
+  $('#updNotes').textContent = (info.notes || info.notice || '本次更新包含若干改进与问题修复。');
+
+  // 已安装 → 必须先问「是否替换并保留配置」
+  if (info.installed) {
+    $('#updKeepWrap').style.display = '';
+    $('#updKeep').checked = true;
+    $('#updKeepHint').textContent =
+      '检测到本机已安装 CDC（版本 ' + (info.installedVersion || '未知') + '）' +
+      (info.installDir ? '，位于 ' + info.installDir : '') +
+      '。将进行覆盖安装；取消勾选会清除本机配置（云端账号、激活码、私信不受影响）。';
+  } else {
+    $('#updKeepWrap').style.display = 'none';
+    $('#updKeep').checked = true;
+  }
+
+  go.textContent = '立即更新';
+  go.onclick = () => {
+    if (UPD.phase === 'done') launchInstaller();
+    else startUpdateDownload();
+  };
+  m.classList.add('show');
+}
+
+function hideUpdateModal() {
+  const m = $('#updModal');
+  if (m) m.classList.remove('show');
+}
+
+async function startUpdateDownload() {
+  if (UPD.phase === 'downloading') return;
+  try { sessionStorage.setItem('updDismissed', '1'); } catch (e) {}
+  UPD.phase = 'downloading';
+  const go = $('#updGo');
+  go.disabled = true;
+  go.textContent = '下载中…';
+  $('#updProgWrap').style.display = '';
+  $('#updProgText').textContent = '正在连接更新服务器…';
+  const r = await api.updateDownload().catch((e) => ({ ok: false, message: e.message }));
+  if (!r || !r.ok) {
+    UPD.phase = 'error';
+    go.disabled = false;
+    go.textContent = '重试';
+    $('#updProgText').textContent = (r && r.message) || '下载启动失败';
+    toast((r && r.message) || '下载启动失败', 'err');
+    return;
+  }
+  clearInterval(UPD.timer);
+  UPD.timer = setInterval(pollUpdateStatus, 500);
+  pollUpdateStatus();
+}
+
+async function pollUpdateStatus() {
+  const s = await api.updateStatus().catch(() => null);
+  if (!s || !s.ok) return;
+  const bar = $('#updBar'), txt = $('#updProgText');
+  if (s.state === 'downloading') {
+    const pct = Math.max(0, Math.min(100, Number(s.percent) || 0));
+    if (bar) bar.style.width = pct + '%';
+    if (txt) txt.textContent = '正在后台下载 ' + pct + '%（' + updFmtSize(s.got) + ' / ' + updFmtSize(s.total) + '）';
+    return;
+  }
+  clearInterval(UPD.timer);
+  UPD.timer = 0;
+  if (s.state === 'done') {
+    UPD.phase = 'done';
+    if (bar) bar.style.width = '100%';
+    if (txt) txt.textContent = '下载完成：' + (s.name || '安装包');
+    toast('下载完成，正在启动安装程序…', 'ok');
+    await launchInstaller();          // 按需求：发现安装包就自动打开
+  } else if (s.state === 'error') {
+    UPD.phase = 'error';
+    const go = $('#updGo');
+    go.disabled = false;
+    go.textContent = '重试';
+    if (txt) txt.textContent = s.err || '下载失败';
+    toast(s.err || '下载失败', 'err');
+  }
+}
+
+async function launchInstaller() {
+  const go = $('#updGo');
+  const keep = UPD.info && UPD.info.installed ? $('#updKeep').checked : true;
+  go.disabled = true;
+  go.textContent = '正在启动安装程序…';
+  const r = await api.updateLaunch(keep).catch((e) => ({ ok: false, message: e.message }));
+  if (r && r.ok) {
+    hideUpdateModal();
+    toast('安装程序已启动' + (r.name ? '：' + r.name : ''), 'ok');
+    const box = $('#updBox');
+    if (box) box.innerHTML = '<span class="chip green">安装程序已启动</span><br><span class="muted">' +
+      esc(r.name || '') + '　已按你的选择' + (keep ? '保留本机配置' : '清除本机配置') + '</span>';
+  } else {
+    go.disabled = false;
+    go.textContent = '重试安装';
+    toast((r && r.message) || '启动安装程序失败', 'err');
+  }
+}
+
+/* 账号页 / 手动点「检查更新」 */
+async function checkUpdate() {
+  const box = $('#updBox');
+  if (box) box.innerHTML = '<span class="muted">正在检查更新…</span>';
+  const r = await api.updateCheck().catch((e) => ({ ok: false, message: e.message }));
+  if (!r || !r.ok) {
+    const msg = (r && r.message) || '检查更新失败';
+    if (box) box.innerHTML = '<span class="muted">' + esc(msg) + '</span>';
+    toast(msg, r && r.supported === false ? 'warn' : 'err');
+    return;
+  }
+  // 【关键】清单没拿到 ≠ 已是最新版本。
+  // 以前这里不问青红皂白一律报"已是最新版本"，把 HTTP 404 / 连不上
+  // 这类真实故障掩盖成了"正常、无更新"——用户只会觉得"点了没反应"。
+  if (r.manifest === false) {
+    const msg = r.message || '更新信息不可用';
+    if (box) {
+      box.innerHTML = '<span class="chip">更新检查未完成</span>' +
+        '<br><span class="muted">' + esc(msg) + '　可先到官网手动下载最新版</span>' +
+        '<br><button class="btn" id="updSiteBtn" style="margin-top:8px">🌐 前往官网下载</button>';
+      const sb = $('#updSiteBtn');
+      if (sb) sb.onclick = () => {
+        try { const p = api.openUrl(r.site || 'https://cdc.mjhcsp.xyz'); if (p && p.catch) p.catch(() => {}); } catch (e) {}
+      };
+    }
+    toast(msg, 'warn');
+    return;
+  }
+  if (r.hasUpdate) {
+    if (box) box.innerHTML = '<span class="chip green">发现新版本 ' + esc(r.version) + '</span>';
+    toast('发现新版本 ' + r.version, 'ok');
+    showUpdateModal(r);
+  } else {
+    if (box) box.innerHTML = '<span class="chip green">已是最新版本（v' + esc(r.current || '') + '）</span>' +
+      (r.installed ? '<br><span class="muted">本机已安装：v' + esc(r.installedVersion || '未知') + '</span>' : '');
+    toast('已是最新版本', 'ok');
+  }
+}
+
+/* 打开软件即检查更新 —— 需求：每次打开 exe 都要提醒。
+     有新版 → 弹更新窗；没新版 → 弹「已是最新版本」；清单拿不到 → 如实提示。
+   只有本次会话里点过「稍后」时才不再重复弹（避免关掉又立刻弹回来）。 */
+async function autoUpdateOnStart() {
+  let dismissed = false;
+  try { dismissed = sessionStorage.getItem('updDismissed') === '1'; } catch (e) {}
+  if (dismissed) return;
+  const r = await api.updateCheck().catch(() => null);
+  if (!r || r.supported === false) return;   // 网页模式 / 后端没应答：不打扰
+  showUpdateModal(r);
+}
+
+/* ============================================================
+   事件绑定
+   ============================================================ */
+/* ---------- 静态骨架渲染（必须最先跑，且与其余绑定解耦） ----------
+   「实用工具」网格与「主题」网格是最基础的两个 UI。
+   【2026-09-23 事故】它们原先写在 bind() 中段，只要 bind() 前面任何一行抛错，
+   整段初始化就中断，表现为：实用工具页空白、主题一个都点不动。
+   现在单独抽出来先渲染，任何异常都不再影响它们。 */
+function renderStaticUI() {
+  try { buildTools(); } catch (e) { console.warn('buildTools failed', e); }
+  try {
+    const grid = $('#themeGrid');
+    if (grid) {
+      grid.innerHTML = '';
+      THEMES.forEach((th) => {
+        const c = document.createElement('div');
+        c.className = 'theme-chip'; c.dataset.theme = th.name;
+        c.innerHTML = '<div class="theme-swatch" style="background:' + th.sw + '"></div>' + th.label;
+        c.onclick = () => { applyTheme(th.name); api.setTheme(th.name).catch(() => {}); toast('主题：' + th.label, 'ok'); };
+        grid.appendChild(c);
+      });
+    }
+    // chip 刚生成，同步一次高亮（init 里的 applyTheme 跑在 chip 存在之前，拿不到它们）
+    applyTheme(document.documentElement.dataset.theme || LS.get('theme', 'default'));
+  } catch (e) { console.warn('theme grid failed', e); }
+}
+
+function bind() {
+  renderStaticUI();          // ← 先保证工具/主题一定渲染出来
+  // 导航
+  $$('.nav-item').forEach((b) => { b.onclick = () => switchPage(b.dataset.page); });
+
+  // 顶部栏
+  $('#btnTheme').onclick = () => {
+    const next = document.documentElement.dataset.theme === 'dark' ? 'default' : 'dark';
+    applyTheme(next); api.setTheme(next).catch(() => {});
+  };
+  $('#btnFrost').onclick = () => setFrost(!document.body.classList.contains('frosted'));
+  $('#userChip').onclick = () => {
+    if (state.user) { if (confirm('退出当前账号？')) { api.logout().then(() => { state.user = ''; state.isAdmin = false; applyUserUI(); $('#overlay').classList.add('show'); toast('已退出', 'ok'); }); } }
+    else switchPage('account');
+  };
+
+  // 登录遮罩
+  $('#tabLogin').onclick = () => setAuthMode('login');
+  $('#tabReg').onclick = () => setAuthMode('register');
+  $('#btnAuth').onclick = doAuth;
+  $('#authPass').addEventListener('keydown', (e) => { if (e.key === 'Enter') doAuth(); });
+  $('#authSkip').onclick = () => { $('#overlay').classList.remove('show'); toast('已跳过登录，多数功能可用', 'warn'); };
+
+  // 数据生成
+  $('#genType').addEventListener('change', toggleGenFields);
+  $('#genBrowse').onclick = async () => { const d = await api.browseFolder('选择输出目录'); if (d) { $('#genOutDir').value = d; toast('目录已选：' + d, 'ok'); } else toast('未选择目录', 'warn'); };
+  $('#genTsDir').onclick = async () => { const d = await api.makeTsDir(); $('#genOutDir').value = d; toast('已设置时间戳目录：' + d, 'ok'); };
+  $('#genRun').onclick = runGen;
+  $('#genPreviewBtn').onclick = previewGen;
+  $('#genClear').onclick = async () => { await api.clearGen(); $('#genFiles').style.display = 'none'; $('#genPreview').style.display = 'none'; $('#genLog').textContent = ''; toast('已清除生成记录', 'ok'); };
+  // 打包本次数据点：弹"另存为"框选择保存位置，只打包本次记录里的文件（不留桌面垃圾）
+  $('#genPackZip').onclick = async () => {
+    try {
+      const dir = ($('#genOutDir').value || '').trim();
+      if (!dir) { toast('请先在"输出目录"指定本次数据的目录，再打包', 'warn'); return; }
+      const names = LS.get('genfiles', []) || [];
+      if (!names.length) { toast('本次没有生成记录，无需打包', 'warn'); return; }
+      const ts = new Date();
+      const pad = (n) => String(n).padStart(2, '0');
+      const defName = '数据点_' + ts.getFullYear() + pad(ts.getMonth() + 1) + pad(ts.getDate()) + '_' + pad(ts.getHours()) + pad(ts.getMinutes()) + '.zip';
+      toast('打包 ' + names.length + ' 个文件，请选择保存位置…', 'ok');
+      const r = await api.saveZip(dir, names.join('|'), defName);
+      if (!r.ok) {
+        if (r.cancel) return;
+        toast(r.message || '打包失败', 'err');
+        return;
+      }
+      genLogLine('✔ 已打包 ' + names.length + ' 个数据点 → ' + r.message.replace('打包完成：', ''));
+      toast('打包完成', 'ok');
+    } catch (e) { toast(e.message || '打包失败', 'err'); }
+  };
+  $('#genExportCsv').onclick = async () => { const r = await api.exportCsv(); toast(r.message || '已导出', 'ok'); };
+  $('#genStats').onclick = async () => { const s = await api.stats(); openModal('统计', '<div class="kv"><span><b>.in 文件</b></span><span>' + s.inCount + '</span></div><div class="kv"><span><b>.out 文件</b></span><span>' + s.outCount + '</span></div>'); };
+  $('#genRename').onclick = async () => { const r = await api.renameAll(); toast(r.message || '完成', r.ok ? 'ok' : 'warn'); };
+  $('#genBig').onclick = async () => { const r = await api.bigFile(); toast(r.message || '完成', r.ok ? 'ok' : 'warn'); };
+  $('#genView').onclick = async () => { if (MODE === 'qt') api.runTool('notepad'); else toast('网页模式请用「下载」按钮查看文件', 'warn'); };
+  $('#genChangeExt').onclick = async () => { const r = await api.changeExt(); toast(r.message || '完成', r.ok ? 'ok' : 'warn'); };
+  $('#genSaveCfg').onclick = saveGenCfg;
+  $('#genLoadCfg').onclick = loadGenCfg;
+
+  // 分组
+  $('#grpAdd').onclick = () => { groups.push({ fields: [{ name: '字段1', type: 0, r1: 1, r2: 100 }] }); saveGroups(); renderGroups(); };
+  $('#grpRun').onclick = runGroups;
+  $('#grpSave').onclick = () => { saveGroups(); toast('分组配置已保存', 'ok'); };
+
+  // 手动
+  $('#manSave').onclick = async () => {
+    const name = ($('#manName').value.trim() || 'example').replace(/\.in$/i, '');
+    const content = $('#manContent').value;
+    if (!content.trim()) { toast('内容为空', 'warn'); return; }
+    if (MODE === 'qt') {
+      const r = await api.manSave(name, content);
+      toast(r.message || '已保存', r.ok ? 'ok' : 'err');
+    } else {
+      const r = await api.manSave(name, content);
+      toast(r.message || '已下载', 'ok');
+    }
+  };
+
+  // 自编译
+  $('#cmpCppBrowse').onclick = async () => {
+    const f = await api.browseFile('选择 .cpp');
+    if (f) { $('#cmpCpp').value = f; toast('已选择源文件', 'ok'); }
+  };
+  $('#cmpGppBrowse').onclick = async () => {
+    const f = await api.browseFile('选择 g++.exe');
+    if (!f) return;
+    $('#cmpGpp').value = f;
+    if ($('#setGpp')) $('#setGpp').value = f;
+    try { await api.setGpp(f); toast('g++ 路径已保存，下次自动使用', 'ok'); }
+    catch (e) { toast('已填入，但保存失败：' + (e.message || e), 'warn'); }
+  };
+  $('#cmpGppAuto').onclick = async () => {
+    const g = await api.autoGpp();
+    if (!g) { toast('未找到 g++，请手动指定', 'err'); return; }
+    $('#cmpGpp').value = g;
+    if ($('#setGpp')) $('#setGpp').value = g;
+    try { await api.setGpp(g); } catch (e) {}
+    toast('找到 g++ 并已保存：' + g, 'ok');
+  };
+  $('#cmpBatch').onclick = async () => {
+    if (!$('#cmpCpp').value.trim()) { toast('请先选择 C++ 源文件', 'warn'); return; }
+    $('#cmpLog').textContent += '▶ 批量编译运行 ' + $('#cmpStart').value + ' ~ ' + $('#cmpEnd').value + '…\n';
+    const r = await api.compileBatch($('#cmpCpp').value.trim(), $('#cmpGpp').value.trim(), Number($('#cmpStart').value), Number($('#cmpEnd').value));
+    $('#cmpLog').textContent += (r.ok ? '✔ ' : '✘ ') + (r.output || '') + '\n';
+    $('#cmpLog').scrollTop = $('#cmpLog').scrollHeight;
+  };
+  $('#cmpSingle').onclick = async () => {
+    if (!$('#cmpCpp').value.trim()) { toast('请先选择 C++ 源文件', 'warn'); return; }
+    $('#cmpLog').textContent += '▶ 单文件编译运行…\n';
+    const r = await api.compileSingle($('#cmpCpp').value.trim(), $('#cmpGpp').value.trim());
+    $('#cmpLog').textContent += (r.ok ? '✔ ' : '✘ ') + (r.output || '') + '\n';
+    $('#cmpLog').scrollTop = $('#cmpLog').scrollHeight;
+  };
+
+  // ===== 内置生成函数库 CDCSCQ =====
+  let libDemoSrc = '';
+  async function loadLibPanel() {
+    const box = $('#libGroups'); if (!box) return;
+    const j = await api.genlib();
+    libDemoSrc = j.demo || '';
+    if (j.name) $('#libName').textContent = j.name;
+    if (j.available === false) {
+      $('#libStatus').innerHTML = '⚠ 未检测到 <code>cdc_lib</code> 目录（函数库随安装包一起提供）。';
+    } else {
+      $('#libStatus').innerHTML = '✔ 已就绪：<code>' + esc(j.header || '#include <cdcscq.hpp>') + '</code>'
+        + '<br><span style="opacity:.75">' + esc(j.dir || '') + '</span>';
+    }
+    box.innerHTML = '';
+    (j.groups || []).forEach((g) => {
+      const d = document.createElement('div'); d.className = 'lib-group';
+      const ul = (g.f || []).map((x) => '<li>' + esc(x) + '</li>').join('');
+      d.innerHTML = '<h4>' + esc(g.t) + '</h4><ul>' + ul + '</ul>';
+      box.appendChild(d);
+    });
+  }
+  if ($('#libCopyHeader')) {
+    $('#libCopyHeader').onclick = async () => {
+      const txt =
+        '#include <cdcscq.hpp>\n' +
+        'using namespace cdcscq;\n\n' +
+        'int main() {\n' +
+        '    seed();                          // 用时间播种；固定数据写 seed(20260101);\n' +
+        '    auto a = seq(10, 1, 100);        // 10 个 [1,100] 的整数\n' +
+        '    out_vec(a);                      // 一行空格分隔输出\n' +
+        '    return 0;\n' +
+        '}\n';
+      try { await navigator.clipboard.writeText(txt); toast('用法已复制到剪贴板', 'ok'); }
+      catch (e) { toast('复制失败，请手动复制', 'warn'); }
+    };
+    $('#libNewDemo').onclick = async () => {
+      const src = libDemoSrc || '#include <cdcscq.hpp>\nusing namespace cdcscq;\nint main(){ seed(); out_vec(seq(10,1,100)); return 0; }\n';
+      const dir = await api.browseFolder('选择保存示例 .cpp 的目录');
+      if (!dir) return;
+      const r = await api.saveFileTo(dir, 'cdcscq_demo.cpp', src);
+      toast(r && r.ok ? ('已保存到 ' + (r.path || dir)) : ((r && r.message) || '保存失败'), r && r.ok ? 'ok' : 'err');
+    };
+  }
+  loadLibPanel();
+
+  // ===== 生成器代码：在 exe 里写码 → 内置编译 → 批量产出 .in =====
+  const GCODE_TPL = {
+    seq: [
+      '// 数列 / 极端数据：按数据点编号轮换形态，一批数据就能覆盖边界情况',
+      '#include <cdcscq.hpp>',
+      'using namespace cdcscq;',
+      '',
+      'int main() {',
+      '    seed_case();                 // 按编号播种：同一点可复现',
+      '    int id = case_id();          // 当前数据点编号 1,2,3,…',
+      '    int n = 10 * id;             // 规模随编号阶梯增长',
+      '    long long LIM = 1000000000;  // 1e9',
+      '',
+      '    const char* kinds[] = {"rand", "asc", "rev", "max", "alt", "small", "near"};',
+      '    out_vec(seq_extreme(n, 1, LIM, kinds[(id - 1) % 7]));',
+      '    return 0;',
+      '}',
+    ].join('\n'),
+    tree: [
+      '// 树：链 / 菊花 / 毛毛虫 / 带权链 / 随机（按编号切换）',
+      '#include <cdcscq.hpp>',
+      'using namespace cdcscq;',
+      '',
+      'int main() {',
+      '    seed_case();',
+      '    int id = case_id();',
+      '    int n = 20 * id;',
+      '    long long LIM = 1000000000;',
+      '',
+      '    if (id == 1)      out_tree(n, tree(n, "chain"));                        // 链：深度最大',
+      '    else if (id == 2) out_tree(n, tree(n, "star"));                         // 菊花：度数最大',
+      '    else if (id == 3) out_tree(n, tree(n, "caterpillar"));                  // 毛毛虫',
+      '    else if (id == 4) out_tree(n, weighted(tree(n, "chain"), 1, LIM), true);// 带权链',
+      '    else              out_tree(n, tree(n, "random"));                       // 随机树',
+      '    return 0;',
+      '}',
+    ].join('\n'),
+    graph: [
+      '// 图：无向 / 有环 / DAG / 分层 DAG / 带权连通 / 网格（按编号切换）',
+      '#include <cdcscq.hpp>',
+      'using namespace cdcscq;',
+      '',
+      'int main() {',
+      '    seed_case();',
+      '    int id = case_id();',
+      '    int n = 20 * id;',
+      '    int m = 2 * n;',
+      '    long long LIM = 1000000000;',
+      '',
+      '    if (id == 1)      out_graph(n, graph_random(n, m, false, true));',
+      '    else if (id == 2) out_graph(n, graph_tree_plus(n, n / 2));            // 连通且有环',
+      '    else if (id == 3) out_graph(n, graph_dag(n, m));',
+      '    else if (id == 4) out_graph(n, graph_dag_layered(n, 5, m));',
+      '    else if (id == 5) out_graph(n, weighted(graph_connected(n, m), 1, LIM), true);',
+      '    else              out_graph(n * n, graph_grid(n, n));                 // n×n 网格图',
+      '    return 0;',
+      '}',
+    ].join('\n'),
+    str: [
+      '// 字符串：随机 / 0-1 / 回文 / 合法括号 / 多串',
+      '#include <cdcscq.hpp>',
+      'using namespace cdcscq;',
+      '',
+      'int main() {',
+      '    seed_case();',
+      '    int id = case_id();',
+      '    int n = 20 * id;',
+      '',
+      '    if (id == 1)      std::cout << str(n, DICT_LOWER) << "\\n";',
+      '    else if (id == 2) std::cout << binary_str(n) << "\\n";',
+      '    else if (id == 3) std::cout << palindrome(n) << "\\n";',
+      '    else if (id == 4) std::cout << bracket_valid(n / 2) << "\\n";',
+      '    else              out_lines(strs(5, n, DICT_ALNUM));',
+      '    return 0;',
+      '}',
+    ].join('\n'),
+    geo: [
+      '// 几何：凸多边形（面积×2 可直接当答案）+ 互异点集',
+      '#include <cdcscq.hpp>',
+      'using namespace cdcscq;',
+      '',
+      'int main() {',
+      '    seed_case();',
+      '    int id = case_id();',
+      '    int n = 5 * id;',
+      '    long long LIM = 1000000;',
+      '',
+      '    auto p = polygon_convex(n, -LIM, LIM);   // 恰好 n 个顶点的凸多边形',
+      '    std::cout << p.size() << "\\n";',
+      '    out_points(p);',
+      '    std::cout << polygon_area2(p) << "\\n";  // 面积×2',
+      '',
+      '    int m = 10 * id;',
+      '    out_points(points(m, -LIM, LIM, true));  // 互不相同的点集',
+      '    return 0;',
+      '}',
+    ].join('\n'),
+    query: [
+      '// 区间询问 / 矩阵：最经典的"数据结构题"输入形态',
+      '#include <cdcscq.hpp>',
+      'using namespace cdcscq;',
+      '',
+      'int main() {',
+      '    seed_case();',
+      '    int id = case_id();',
+      '    int n = 100 * id;',
+      '    long long LIM = 1000000000;',
+      '',
+      '    std::cout << n << " " << 2 * n << "\\n";',
+      '    out_vec(seq(n, 1, LIM));                     // 序列',
+      '    out_queries(queries(2 * n, 1, n));           // 2n 个区间询问',
+      '    return 0;',
+      '}',
+    ].join('\n'),
+  };
+  let gcodeDemoSrc = '';        // 综合示例（来自 cdc_lib\\examples\\demo_all.cpp）
+
+  function gcodeLog(s) {
+    const el = $('#gcodeLog'); if (!el) return;
+    el.textContent += s + '\n';
+    el.scrollTop = el.scrollHeight;
+  }
+  function gcodeApplyTpl(key) {
+    if (!key) return;
+    if (key === 'demo') {
+      if (gcodeDemoSrc) { $('#gcodeSrc').value = gcodeDemoSrc; return; }
+      api.genlib().then((j) => {
+        gcodeDemoSrc = j.demo || '';
+        if (gcodeDemoSrc) { $('#gcodeSrc').value = gcodeDemoSrc; return; }
+        // 读不到时不要把「// 未能读取…」当代码塞进编辑器（那会被当成真代码去编译，报一堆莫名其妙的错）
+        const tip = '未能读取综合示例：请确认 exe 同目录下有 cdc_lib\\examples\\demo_all.cpp';
+        gcodeLog('✘ ' + tip);
+        toast(tip, 'err');
+      });
+      return;
+    }
+    if (GCODE_TPL[key]) $('#gcodeSrc').value = GCODE_TPL[key];
+  }
+  async function gcodeRun(onlyCheck) {
+    const src = $('#gcodeSrc').value;
+    if (!src.trim()) { toast('生成器代码为空，请先写代码或载入模板', 'warn'); return; }
+    const dir = ($('#gcodeDir').value || '').trim();
+    if (!onlyCheck && !dir) { toast('请先选择「数据存放目录」', 'warn'); return; }
+    const btn = $('#gcodeRun');
+    btn.disabled = true;
+    gcodeLog('▶ ' + (onlyCheck ? '检查生成器代码…'
+      : ('编译并生成 ' + $('#gcodeStart').value + ' ~ ' + $('#gcodeEnd').value + ' 号数据…')));
+    try {
+      const r = await api.genRun({
+        code: src,
+        dataDir: dir,
+        start: Number($('#gcodeStart').value) || 1,
+        end: Number($('#gcodeEnd').value) || 1,
+        mode: onlyCheck ? 'check' : '',
+      });
+      gcodeLog((r.output || r.message || '').trim());
+      if (r.ok && !onlyCheck && (r.files || []).length) {
+        const names = r.files.map((f) => f.name);
+        LS.set('genfiles', names);                 // 让「打包本次数据点」认得这批文件
+        if ($('#genOutDir')) $('#genOutDir').value = r.dir || dir;
+        renderGenFileNames(names);
+        toast('已生成 ' + names.length + ' 个 .in', 'ok');
+      } else if (!r.ok) {
+        toast('失败：请看下方日志', 'err');
+      } else if (r.ok) {
+        toast('代码检查通过', 'ok');
+      }
+    } catch (e) {
+      gcodeLog('✘ ' + e.message);
+      toast(e.message, 'err');
+    }
+    btn.disabled = false;
+  }
+  if ($('#gcodeSrc')) {
+    $('#gcodeTpl').addEventListener('change', () => {
+      gcodeApplyTpl($('#gcodeTpl').value);
+      $('#gcodeTpl').value = '';
+    });
+    $('#gcodeBrowse').onclick = async () => {
+      const d = await api.browseFolder('选择数据存放目录');
+      if (d) { $('#gcodeDir').value = d; toast('目录已选：' + d, 'ok'); }
+    };
+    $('#gcodeTsDir').onclick = async () => {
+      const d = await api.makeTsDir();
+      if (d) { $('#gcodeDir').value = d; toast('已设置时间戳目录：' + d, 'ok'); }
+    };
+    $('#gcodeRun').onclick = () => gcodeRun(false);
+    $('#gcodeCheck').onclick = () => gcodeRun(true);
+    $('#gcodeClearLog').onclick = () => { $('#gcodeLog').textContent = ''; };
+    $('#gcodeSaveCpp').onclick = async () => {
+      const dir = ($('#gcodeDir').value || '').trim();
+      if (!dir) { toast('请先选择目录，再另存 .cpp', 'warn'); return; }
+      const r = await api.saveFileTo(dir, 'cdc_generator.cpp', $('#gcodeSrc').value);
+      toast(r && r.ok ? ('已另存：' + (r.path || dir)) : ((r && r.message) || '保存失败'),
+        r && r.ok ? 'ok' : 'err');
+    };
+    $('#gcodePack').onclick = () => $('#genPackZip').click();
+    // 进页面即预填综合示例，用户可以直接点「编译并生成」
+    api.genlib().then((j) => {
+      gcodeDemoSrc = j.demo || '';
+      if ($('#gcodeSrc').value.trim()) return;
+      if (gcodeDemoSrc) $('#gcodeSrc').value = gcodeDemoSrc;
+      else gcodeLog('提示：未读到 cdc_lib\\examples\\demo_all.cpp（可仍从「载入模板」选一个内置模板开始写）');
+    });
+  }
+
+  // 打包
+  $('#zipBrowse').onclick = async () => { if (MODE === 'qt') { const d = await api.browseFolder('选择源目录'); if (d) $('#zipSrc').value = d; } else toast('需 Qt 桌面版', 'warn'); };
+  $('#zipRun').onclick = async () => {
+    if (MODE !== 'qt') { toast('打包需 Qt 桌面版', 'warn'); return; }
+    const r = await api.packZip($('#zipName').value, $('#zipSrc').value);
+    $('#zipLog').textContent += (r.ok ? '✔ ' : '✘ ') + (r.message || r.output || '') + '\n';
+    toast(r.ok ? '打包完成' : '打包失败', r.ok ? 'ok' : 'err');
+  };
+
+  // 工具网格已由 renderStaticUI() 在 bind() 开头统一渲染
+  $('#ghOpen').onclick = () => ghAction(false);
+  $('#ghHome').onclick = () => { $('#ghUrl').value = ''; ghAction(false); };
+  $('#ghCopy').onclick = () => ghAction(true);
+
+  // 账号
+  $('#accLogin').onclick = async () => {
+    const u = $('#accUser').value.trim(), p = $('#accPass').value;
+    if (!u || !p) { $('#accLog').textContent = '请输入用户名和密码'; return; }
+    const r = await api.login(u, p);
+    $('#accLog').textContent = r.message || (r.ok ? '登录成功' : '登录失败');
+    if (r.ok) afterLogin(r);
+  };
+  $('#accReg').onclick = async () => {
+    const u = $('#accUser').value.trim(), p = $('#accPass').value;
+    if (!u || !p) { $('#accLog').textContent = '请输入用户名和密码'; return; }
+    const r = await api.register(u, p);
+    $('#accLog').textContent = r.message || '';
+    if (r.ok) toast(r.message, 'ok');
+  };
+  $('#accLogout').onclick = async () => { await api.logout(); state.user = ''; state.isAdmin = false; applyUserUI(); toast('已退出', 'ok'); };
+  $('#accRename').onclick = async () => {
+    const n = prompt('新用户名：'); if (!n) return;
+    const r = await api.renameUser(n.trim());
+    if (r.ok) { state.user = n.trim(); applyUserUI(); toast(r.message, 'ok'); } else toast(r.message, 'err');
+  };
+  $('#accActivate').onclick = () => {
+    openModal('激活码充值', '<input type="text" id="payCode" placeholder="输入激活码（如 CDA-AI-XXXXXXXX）" style="width:100%"><div class="desc" style="margin-top:6px">充值次数由激活码本身决定（生成时设定），一码最多 3 台设备使用</div><button class="btn primary" id="payGo" style="margin-top:10px">立即激活</button><pre class="log" id="payOut" style="margin-top:10px"></pre>');
+    $('#payGo').onclick = async () => {
+      const code = $('#payCode').value.trim();
+      if (!code) return;
+      $('#payOut').textContent = '正在验证…';
+      const r = await api.activate(code);
+      $('#payOut').textContent = r.message || '';
+      refreshAccountPage();
+    };
+  };
+  $('#notifPost').onclick = async () => {
+    const t = $('#notifTitle').value.trim(), c = $('#notifContent').value.trim();
+    if (!t) { toast('请输入标题', 'warn'); return; }
+    const r = await api.postNotif(t, c);
+    if (r.ok) { $('#notifTitle').value = ''; $('#notifContent').value = ''; renderNotifs(); toast('已发布', 'ok'); }
+    else toast(r.message, 'err');
+  };
+  $('#accUpdate').onclick = checkUpdate;
+
+  // 自动更新弹窗：一个按钮按阶段分派（下载 → 完成后启动安装）
+  const updGoBtn = $('#updGo');
+  if (updGoBtn) updGoBtn.onclick = () => {
+    if (UPD.phase === 'done') launchInstaller();
+    else startUpdateDownload();
+  };
+  const updLaterBtn = $('#updLater');
+  if (updLaterBtn) updLaterBtn.onclick = () => {
+    try { sessionStorage.setItem('updDismissed', '1'); } catch (e) {}
+    hideUpdateModal();
+  };
+
+  // 私信搜索：每输入一个字符就实时过滤用户；回车/打开 直接开聊
+  let msgSearchTimer = null;
+  $('#msgSearch').addEventListener('input', () => {
+    clearTimeout(msgSearchTimer);
+    const q = $('#msgSearch').value;
+    msgSearchTimer = setTimeout(() => {
+      if (q.trim()) renderSearchResults(q); else refreshContacts();
+    }, 200);
+  });
+  $('#msgAddPeer').onclick = () => {
+    const p = $('#msgSearch').value.trim();
+    if (!p) return;
+    state.peer = p; selectPeer(p);
+  };
+  $('#msgSearch').addEventListener('keydown', (e) => { if (e.key === 'Enter') $('#msgAddPeer').click(); });
+  $('#msgSend').onclick = sendMsg;
+  $('#msgText').addEventListener('keydown', (e) => { if (e.key === 'Enter') sendMsg(); });
+
+  // AI
+  $('#aiSend').onclick = sendAi;
+  $('#aiInput').addEventListener('keydown', (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendAi(); } });
+  $('#aiClear').onclick = () => { $('#aiLog').innerHTML = ''; toast('已清空对话', 'ok'); };
+
+  // 设置
+  $('#setFrosted').onchange = (e) => setFrost(e.target.checked);
+  $('#setGppBrowse').onclick = async () => {
+    const f = await api.browseFile('选择 g++.exe');
+    if (!f) return;
+    $('#setGpp').value = f;
+    if ($('#cmpGpp')) $('#cmpGpp').value = f;
+    try { await api.setGpp(f); toast('g++ 路径已保存', 'ok'); } catch (e) { toast('保存失败：' + (e.message || e), 'warn'); }
+  };
+  $('#setGppAuto').onclick = async () => {
+    const g = await api.autoGpp();
+    if (!g) { toast('未找到 g++，请手动指定', 'err'); return; }
+    $('#setGpp').value = g;
+    if ($('#cmpGpp')) $('#cmpGpp').value = g;
+    try { await api.setGpp(g); } catch (e) {}
+    toast('找到 g++ 并已保存：' + g, 'ok');
+  };
+  $('#setGpp').addEventListener('change', () => api.setGpp($('#setGpp').value).catch(() => {}));
+  $('#setOutDirBrowse').onclick = async () => { if (MODE === 'qt') { const d = await api.browseFolder('选择输出目录'); if (d) { $('#setOutDir').value = d; api.setOutDir(d); } } else toast('网页模式输出到桌面', 'warn'); };
+  $('#setAiSave').onclick = async () => {
+    await api.setAiConf($('#setAiKey').value, $('#setAiModel').value, $('#setAiBase').value);
+    toast('AI 配置已保存', 'ok');
+  };
+  $('#setCfgReset').onclick = async () => {
+    await api.setAiConf('', 'qwen-plus', 'https://dashscope.aliyuncs.com/compatible-mode/v1');
+    $('#setAiKey').value = ''; $('#setAiModel').value = 'qwen-plus'; $('#setAiBase').value = 'https://dashscope.aliyuncs.com/compatible-mode/v1';
+    toast('已恢复默认', 'ok');
+  };
+  // 自定义主题配色
+  (function () {
+    const ap = $('#custThemeApply'); const rs = $('#custThemeReset');
+    if (ap) ap.onclick = () => {
+      const a1 = ($('#custAccent') || {}).value || '';
+      const a2 = ($('#custAccent2') || {}).value || a1;
+      if (!a1) { toast('请先选择主色', 'warn'); return; }
+      try { localStorage.setItem('cdc_cust_accent', a1); localStorage.setItem('cdc_cust_accent2', a2); } catch (e) {}
+      applyCustomColors(a1, a2);
+      toast('已应用自定义配色', 'ok');
+    };
+    if (rs) rs.onclick = () => {
+      try { localStorage.removeItem('cdc_cust_accent'); localStorage.removeItem('cdc_cust_accent2'); } catch (e) {}
+      applyCustomColors('', '');
+      toast('已恢复预设主题', 'ok');
+    };
+  })();
+  $('#btnAbout').onclick = () => {
+    openModal('关于 Code date creation（CDC）',
+      '<div class="kv"><span><b>产品</b></span><span>Code date creation · CDC exceed 测试数据生成器</span></div>' +
+      '<div class="kv"><span><b>版本</b></span><span>v7.1.0（网页后端版）</span></div>' +
+      '<div class="kv"><span><b>作者</b></span><span>starryfast · 独立开发 · GitCode 组织 Code date creation编写</span></div>' +
+      '<div class="kv"><span><b>官网</b></span><span>cdc.mjhcsp.xyz</span></div>' +
+      '<div class="kv"><span><b>架构</b></span><span>C++ 本地后端（cdc_backend.exe）+ 内嵌网页前端 + 云端 PHP/MySQL</span></div>' +
+      '<div class="kv"><span><b>功能</b></span><span>数据生成 / 自编译 / 打包 / 工具 / 账号 / 私信 / AI 助手</span></div>' +
+      '<div class="kv"><span><b>数据存放</b></span><span>设置与生成记录：浏览器本地（localStorage）；账号 / 私信 / 激活码 / AI 次数：云端数据库；生成的 .in / .out / ZIP：你选择的目录</span></div>' +
+      '<div class="kv"><span><b>AI 助手</b></span><span>服务器配额或自备 Key，激活码按码内次数充值</span></div>');
+  };
+
+  // 主题网格已由 renderStaticUI() 在 bind() 开头统一渲染
+
+  // 弹窗
+  $('#modalClose').onclick = () => $('#modal').classList.remove('show');
+  $('#modal').addEventListener('click', (e) => { if (e.target.id === 'modal') $('#modal').classList.remove('show'); });
+
+  // 生成日志初始提示
+  genLogLine('CDC 数据生成器 v7.1.0 · ' + (MODE === 'qt' ? 'Qt 桌面模式（全功能）' : '网页模式'));
+}
+
+/* ============================================================
+   启动
+   ============================================================ */
+window.addEventListener('load', () => {
+  buildApi();
+  setModeChip();
+
+  if (MODE === 'qt') {
+    new QWebChannel(qt.webChannelTransport, (ch) => {
+      qtBridge = ch.objects.bridge;
+      // 信号
+      if (qtBridge.logUpdated && qtBridge.logUpdated.connect) qtBridge.logUpdated.connect((m) => genLogLine(m));
+      if (qtBridge.statusUpdated && qtBridge.statusUpdated.connect) qtBridge.statusUpdated.connect((m) => {});
+      init();
+    });
+  } else {
+    init();
+  }
+});
+
+async function init() {
+  // 主题恢复
+  try {
+    const theme = MODE === 'qt' ? (await api.getTheme()) : LS.get('theme', 'default');
+    applyTheme(theme || 'default');
+  } catch (e) {}
+  try { const f = LS.get('frost', false); if (f) setFrost(true); } catch (e) {}
+  // 生成记录仅在本次运行内有效：每次打开程序自动清空（不留上次的数据点记录）
+  try { localStorage.removeItem('cdc_genfiles'); localStorage.removeItem('cdc_genPreviewCache'); } catch (e) {}
+
+  bind();
+  loadGroups(); renderGroups();
+  toggleGenFields();
+
+  // 登录态恢复
+  try {
+    const info = await api.getInfo();
+    state.user = info.user || ''; state.isAdmin = !!info.isAdmin;
+    state.server = info.server || ''; state.gpp = info.gpp || '';
+    applyUserUI();
+    if (!state.user) { $('#overlay').classList.add('show'); toast('请先登录（也可跳过，多数功能可用）', 'warn'); }
+  } catch (e) {
+    $('#overlay').classList.add('show');
+  }
+  refreshUnread();
+  refreshAiQuota();
+  // 未读轮询：每 20 秒刷新导航未读数与通讯录徽标（谁给你发了新消息没看，实时显示）
+  setInterval(() => { if (state.user) refreshUnread(); }, 20000);
+}
+
+</script>
+
+  <script>
+
+  (function () {
+    'use strict';
+
+    /* ---------- 1. 星空粒子背景 ---------- */
+    var canvas = document.getElementById('starfield');
+    if (canvas) {
+      var ctx = canvas.getContext('2d');
+      var w = 0, h = 0, stars = [];
+      var STAR_COUNT = 220, MAX_SPEED = 0.32;
+
+      function resize() {
+        w = canvas.width = window.innerWidth;
+        h = canvas.height = window.innerHeight;
+      }
+      window.addEventListener('resize', resize);
+      resize();
+
+      function Star() {
+        this.x = Math.random() * w;
+        this.y = Math.random() * h;
+        this.size = Math.random() * 2.1 + 0.5;
+        this.sx = (Math.random() - 0.5) * MAX_SPEED * 1.2;
+        this.sy = (Math.random() - 0.5) * MAX_SPEED * 1.2;
+        this.op = Math.random() * 0.65 + 0.3;
+        this.tw = Math.random() * Math.PI * 2;
+        this.tws = 0.008 + Math.random() * 0.018;
+      }
+      Star.prototype.update = function () {
+        this.x += this.sx; this.y += this.sy; this.tw += this.tws;
+        if (this.x < 0) this.x = w; else if (this.x > w) this.x = 0;
+        if (this.y < 0) this.y = h; else if (this.y > h) this.y = 0;
+      };
+      Star.prototype.draw = function () {
+        var a = this.op * (0.65 + 0.35 * Math.sin(this.tw));
+        var tint = this.size > 1.8 ? '168,192,255' : '220,235,255';
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(' + tint + ',' + a + ')';
+        ctx.fill();
+        if (this.size > 1.9) {
+          ctx.shadowColor = 'rgba(168,192,255,.5)';
+          ctx.shadowBlur = 6;
+          ctx.fill();
+          ctx.shadowBlur = 0;
+        }
+      };
+
+      for (var i = 0; i < STAR_COUNT; i++) stars.push(new Star());
+
+      (function loop() {
+        if (!w || !h) { resize(); }
+        ctx.clearRect(0, 0, w, h);
+        for (var j = 0; j < stars.length; j++) { stars[j].update(); stars[j].draw(); }
+        requestAnimationFrame(loop);
+      })();
+    }
+
+    /* ---------- 2. 数据生成页：三个子标签切换 ---------- */
+    // 原 app.js 未绑定该事件，导致「分组生成」「手动 .in」点了没反应
+    var tabs = document.querySelectorAll('.page[data-page="gen"] > .tabs > .tab[data-tab]');
+    var panes = document.querySelectorAll('.page[data-page="gen"] > .tab-page[data-tabp]');
+
+    function switchTab(name) {
+      Array.prototype.forEach.call(tabs, function (t) {
+        t.classList.toggle('on', t.getAttribute('data-tab') === name);
+      });
+      Array.prototype.forEach.call(panes, function (p) {
+        p.classList.toggle('on', p.getAttribute('data-tabp') === name);
+      });
+    }
+
+    Array.prototype.forEach.call(tabs, function (t) {
+      t.addEventListener('click', function () {
+        switchTab(t.getAttribute('data-tab'));
+      });
+    });
+
+    console.log('✨ CDC 星空前端已启动');
+  })();
+  
+</script>
+
+<script>
+(function(){
+  function go(){
+    var ov = document.getElementById('overlay');
+    if (ov) { ov.classList.remove('show'); ov.style.display = 'none'; }
+    var t = document.getElementById('toast');
+    if (t) t.style.opacity = '0';
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', go);
+  else go();
+  setTimeout(go, 200);
+  setTimeout(go, 800);
+})();
+</script>
+<script>
+/* =============================================================
+   CDC 前端 ←→ C++ 后端 桥接层
+   探测本地 C++ 后端（127.0.0.1:18889），在线则：
+   1) 把 MODE 切到 'qt'（复用前端已有的本地操作分支）
+   2) 用 Object.assign 覆盖 webBridge 的本地操作 → 改调 C++ HTTP API
+   离线则保持纯网页模式（localStorage + 浏览器下载）
+   ============================================================= */
+(function () {
+  'use strict';
+  var BASE = 'http://127.0.0.1:18889';
+  var started = false;
+
+  function post(path, data) {
+    return fetch(BASE + path, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data || {}),
+    }).then(function (r) { return r.json(); });
+  }
+
+  function enableCpp(info) {
+    if (started) return;
+    started = true;
+
+    MODE = 'qt';                    // 复用前端 qt 分支（本地文件/编译/工具）
+    window.CPP_BACKEND = true;
+    window.CPP_BASE = BASE;
+
+    // 预填 g++ 路径
+    if (info && info.gpp) {
+      try { var g1 = document.getElementById('cmpGpp'); if (g1) g1.value = info.gpp; } catch (e) {}
+      try { var g2 = document.getElementById('setGpp'); if (g2) g2.value = info.gpp; } catch (e) {}
+    }
+
+    /* ---- 覆盖 webBridge 的本地操作 → C++ 后端 ---- */
+    Object.assign(webBridge, {
+      gen: async function (params) {
+        var body = {
+          start: Number(params.startId), end: Number(params.endId),
+          count: Math.max(1, Number(params.count) || 1), type: Number(params.type) || 0,
+          r1: Number(params.range1), r2: Number(params.range2),
+          strLen: Math.max(1, Number(params.strLen) || 8),
+          customCharset: params.customCharset || '',
+          perFile: !!params.writeCount, extra: params.extraVars || '',
+          tsDir: false, outDir: params.outDir || ''
+        };
+        try {
+          var j = await post('/api/generate', body);
+          if (j.ok) {
+            var names = (j.files || []).map(function (f) { return f.name; });
+            LS.set('genfiles', names);
+            return { ok: true, message: '已生成 ' + j.created + ' 个 .in 文件 → ' + j.dir, files: names };
+          }
+          return { ok: false, message: j.message || '生成失败' };
+        } catch (e) { return { ok: false, message: 'C++ 后端连接失败：' + e.message }; }
+      },
+
+      genGroup: async function (groups, count) {
+        // 用网页逻辑组装内容，再交给 C++ 后端写真实文件
+        var files = [];
+        for (var g = 1; g <= Number(count); g++) {
+          var lines = [];
+          groups.forEach(function (grp) {
+            var row = grp.fields.map(function (f) {
+              var t = Number(f.type), r1 = Number(f.r1), r2 = Number(f.r2), len = Math.max(1, Number(f.r1) || 1);
+              if (t === 0 || t === 1) return String(Math.floor(r1 + Math.random() * (r2 - r1 + 1)));
+              var lower = 'abcdefghijklmnopqrstuvwxyz', upper = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+              var cs = [lower, upper, lower + upper + '0123456789'][Math.min(4, t) - 2] || lower + upper + '0123456789';
+              var s = ''; for (var i = 0; i < len; i++) s += cs[Math.floor(Math.random() * cs.length)];
+              return s;
+            });
+            lines.push(row.join(' '));
+          });
+          files.push({ name: 'group_' + g + '.in', content: lines.join('\n') + '\n' });
+        }
+        try {
+          var j = await post('/api/writefiles', { outDir: '', files: files });
+          var names = (j.files || []).map(function (f) { return f.name; });
+          LS.set('genfiles', names);
+          return { ok: true, message: '已生成 ' + j.created + ' 个分组文件 → ' + j.dir, files: names };
+        } catch (e) { return { ok: false, message: 'C++ 后端连接失败：' + e.message }; }
+      },
+
+      renameAll: async function () {
+        try {
+          var dir = document.getElementById('genOutDir') ? document.getElementById('genOutDir').value : '';
+          var j = await post('/api/rename', { dir: dir });
+          return { ok: true, message: '已重命名 ' + (j.renamed || 0) + ' 个文件 *.in → *.in.txt' };
+        } catch (e) { return { ok: false, message: e.message }; }
+      },
+
+      bigFile: async function () {
+        var body = {
+          type: Number(document.getElementById('genType').value) || 0,
+          r1: Number(document.getElementById('genR1').value),
+          r2: Number(document.getElementById('genR2').value),
+          strLen: Math.max(1, Number(document.getElementById('genStrLen').value) || 8),
+          customCharset: document.getElementById('genCharset').value || '',
+          outDir: document.getElementById('genOutDir').value || ''
+        };
+        try {
+          var j = await post('/api/bigfile', body);
+          return { ok: true, message: '大文件已生成：' + j.path };
+        } catch (e) { return { ok: false, message: e.message }; }
+      },
+
+      changeExt: async function () {
+        try {
+          var dir = document.getElementById('genOutDir') ? document.getElementById('genOutDir').value : '';
+          var j = await post('/api/rename', { dir: dir });
+          return { ok: true, message: '已改名 ' + (j.renamed || 0) + ' 个文件' };
+        } catch (e) { return { ok: false, message: e.message }; }
+      },
+
+      compileBatch: async function (cpp, gpp, start, end) {
+        try {
+          var dd = (document.getElementById('genOutDir') || {}).value || '';
+          var j = await post('/api/compile', { gpp: gpp, source: cpp, mode: 'batch', start: Number(start) || 1, end: Number(end) || 10, dataDir: dd });
+          return { ok: j.ok, output: j.output || j.message || '' };
+        } catch (e) { return { ok: false, output: 'C++ 后端连接失败：' + e.message }; }
+      },
+
+      compileSingle: async function (cpp, gpp) {
+        try {
+          var dd = (document.getElementById('genOutDir') || {}).value || '';
+          var j = await post('/api/compile', { gpp: gpp, source: cpp, mode: 'single', start: 1, end: 1, dataDir: dd });
+          return { ok: j.ok, output: j.output || j.message || '' };
+        } catch (e) { return { ok: false, output: 'C++ 后端连接失败：' + e.message }; }
+      },
+
+      autoGpp: async function () {
+        try { var j = await post('/api/gppdetect'); if (j && j.ok && j.gpp) return j.gpp; } catch (e) {}
+        return (info && info.gpp) || '';
+      },
+      getGpp: async function () { return (info && info.gpp) || ''; },
+      /* 保存 g++ 路径到后端 cdc_gpp.cfg（下次启动自动回填） */
+      setGpp: async function (g) {
+        try {
+          var j = await post('/api/setgpp', { gpp: g || '' });
+          if (j && j.ok) return true;
+          if (j && j.message) throw new Error(j.message);
+        } catch (e) { throw e; }
+        return false;
+      },
+
+      /* 内置 CDCSCQ 函数库信息（分类 + 示例源码） */
+      genlib: async function () {
+        try { var j = await post('/api/genlib'); return j || {}; } catch (e) { return {}; }
+      },
+
+      /* ★ 生成器模式：把编辑器里的代码交给后端 —— 编译 + 逐点运行 → 直接产出 .in */
+      genRun: async function (payload) {
+        try {
+          var j = await post('/api/genrun', {
+            code: payload.code || '',
+            gpp: payload.gpp || '',
+            dataDir: payload.dataDir || '',
+            start: Number(payload.start) || 1,
+            end: Number(payload.end) || 1,
+            mode: payload.mode || ''
+          });
+          return {
+            ok: !!j.ok, output: j.output || j.message || '',
+            files: j.files || [], dir: j.dir || '',
+            okCount: j.okCount || 0, failCount: j.failCount || 0
+          };
+        } catch (e) { return { ok: false, output: 'C++ 后端连接失败：' + e.message }; }
+      },
+
+      packZip: async function (name, src) {
+        var dst = src ? src + '.zip' : (name || 'archive') + '.zip';
+        if (name && src) dst = (name.indexOf('.zip') >= 0 ? name : name + '.zip');
+        try {
+          var j = await post('/api/zip', { src: src, dst: dst });
+          return { ok: j.ok, message: j.ok ? ('打包完成：' + j.path) : (j.message || '打包失败') };
+        } catch (e) { return { ok: false, message: e.message }; }
+      },
+
+      /* 另存为 ZIP：弹保存框选位置；dir+files(记录) 打包本次数据点，dir 为空时打包整个 src 目录 */
+      saveZip: async function (dir, files, defName) {
+        try {
+          var j = await post('/api/savezip', { dir: dir, files: files || '', defName: defName || '' });
+          if (j.cancel) return { ok: false, cancel: true };
+          return { ok: j.ok, message: j.ok ? ('打包完成：' + j.path) : (j.message || '打包失败') };
+        } catch (e) { return { ok: false, message: e.message }; }
+      },
+
+      runTool: async function (cmd) {
+        try {
+          var j = await post('/api/tool', { cmd: cmd });
+          return j.ok;
+        } catch (e) { return false; }
+      },
+
+      browseFile: async function () {
+        try { var j = await post('/api/browse', { mode: 'file' }); return j.path || ''; } catch (e) { return ''; }
+      },
+      browseFolder: async function () {
+        try { var j = await post('/api/browse', { mode: 'folder' }); return j.path || ''; } catch (e) { return ''; }
+      },
+
+      manSave: async function (name, content) {
+        try {
+          var j = await post('/api/writefiles', { outDir: '', files: [{ name: (name || 'example') + '.in', content: content }] });
+          return { ok: j.ok, message: '已保存 ' + (name || 'example') + '.in → ' + j.dir };
+        } catch (e) { return { ok: false, message: e.message }; }
+      },
+
+      /* 把文本内容写到指定目录下的指定文件名（用于"另存示例生成器"） */
+      saveFileTo: async function (dir, name, content) {
+        try {
+          var j = await post('/api/writefiles', { outDir: dir, files: [{ name: name, content: content }] });
+          var sep = (dir && dir.indexOf('\\') >= 0) ? '\\' : '/';
+          return { ok: !!j.ok, path: (j.dir || dir) + (dir ? sep : '') + name, message: j.message };
+        } catch (e) { return { ok: false, message: e.message }; }
+      },
+
+      saveTextFile: async function (defaultName, content) {
+        try {
+          var j = await post('/api/writefiles', { outDir: '', files: [{ name: defaultName || 'file.txt', content: content }] });
+          return { ok: j.ok, message: '已保存到 ' + j.dir };
+        } catch (e) { return { ok: false, message: e.message }; }
+      },
+
+      /* ---- 自动更新：全部交给 C++ 后端（页面拿不到云端主机与下载直链）---- */
+      updateCheck:    async function () { return await post('/api/update', {}); },
+      updateDownload: async function () { return await post('/api/updatedl', {}); },
+      updateStatus:   async function () { return await post('/api/updstatus', {}); },
+      updateLaunch:   async function (keepCfg) { return await post('/api/updlaunch', { keepCfg: !!keepCfg }); },
+      installed:      async function () { return await post('/api/installed', {}); },
+
+      getInfo: async function () {
+        return { user: '', isAdmin: false, server: '', gpp: (info && info.gpp) || '', outDir: '后端本地目录', theme: 'default', version: '7.1.0', mode: 'cpp', hasKey: false };
+      },
+    });
+
+    /* ---- UI 提示 ---- */
+    try {
+      var mc = document.getElementById('modeChip');
+      if (mc) mc.textContent = 'C++ 后端 · ' + (info.ver || '7.1.0');
+      var td = document.getElementById('toolsDesc');
+      if (td) td.textContent = '系统工具由 C++ 后端直接启动（calc/notepad/浏览器/系统命令…）';
+      var ab = document.getElementById('aboutBackend');
+      if (ab) ab.textContent = 'C++ 本地后端（' + BASE + '）';
+    } catch (e) {}
+
+    // 刷新日志提示
+    try {
+      var gl = document.getElementById('genLog');
+      if (gl && !gl.textContent) gl.textContent = 'CDC v7.1.0 · C++ 后端模式（真实文件操作）\n';
+    } catch (e) {}
+
+    // 打开软件即检查更新：有新版立刻弹窗（本次会话点过「稍后」就不再弹）
+    setTimeout(function () { try { autoUpdateOnStart(); } catch (e) {} }, 900);
+  }
+
+  /* ---- 探测后端 ---- */
+  function ping() {
+    var ctrl = null;
+    try { ctrl = new AbortController(); } catch (e) {}
+    var opt = { method: 'GET' };
+    if (ctrl) { opt.signal = ctrl.signal; setTimeout(function () { try { ctrl.abort(); } catch (e) {} }, 1000); }
+    fetch(BASE + '/api/ping', opt)
+      .then(function (r) { return r.json(); })
+      .then(function (d) {
+        if (d && d.backend === 'cpp') {
+          return fetch(BASE + '/api/info', opt).then(function (r) { return r.json(); }).catch(function () { return d; });
+        }
+        return null;
+      })
+      .then(function (info) { if (info) enableCpp(info); })
+      .catch(function () { /* 后端未启动 → 保持网页模式 */ });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', ping);
+  } else {
+    ping();
+  }
+})();
+
+</script>
+</body>
+</html>

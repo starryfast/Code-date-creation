@@ -1,0 +1,26 @@
+// CDC DataGen v8.0.0 「幻想」 — 资源定义（应用图标 + 内嵌前端 + 内嵌文档中心）
+// 编译：windres cdc.rc -O coff -o cdc_res.o
+#include "winver.h"
+
+// 应用图标（资源管理器 / 任务栏显示）
+IDI_APP ICON "icon.ico"
+
+// 内嵌前端：编译进 exe，运行时不再依赖磁盘上的 html/js
+// 对应 cdc_backend.cpp 中 ServeFrontend() -> ReadRes("IDR_INDEX"/"IDR_BRIDGE")
+IDR_INDEX  RCDATA "index.html"
+IDR_BRIDGE RCDATA "cpp_bridge.js"
+
+// 内置文档中心：全部为项目自有文档，离线可读
+// 对应 ApiDocs() / ApiDocOne()，前端「文档中心」页直接渲染
+IDR_DOC_LICENSE      RCDATA "docs/LICENSE.txt"
+IDR_DOC_LICENSE_GPL  RCDATA "docs/LICENSE-GPL"
+IDR_DOC_MANUAL       RCDATA "docs/MANUAL.md"
+IDR_DOC_CHANGELOG    RCDATA "docs/CHANGELOG.md"
+IDR_DOC_DEPLOY       RCDATA "docs/DEPLOY.md"
+IDR_DOC_SERVER       RCDATA "docs/SERVER_README.md"
+IDR_DOC_CMD_README   RCDATA "docs/CMD_README.md"
+IDR_DOC_CMD_CHG_OSS  RCDATA "docs/CMD_CHANGELOG_OSS.md"
+IDR_DOC_OS_README    RCDATA "docs/OS_README.md"
+IDR_DOC_WEBSITE      RCDATA "docs/WEBSITE_README.md"
+IDR_DOC_TEAM         RCDATA "docs/TEAM_README.md"
+IDR_DOC_CP           RCDATA "docs/CP_README.md"

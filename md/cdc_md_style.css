@@ -1,0 +1,142 @@
+/*!
+ * CDC 内置 AI 助手 —— Markdown / LaTeX 渲染样式
+ * 配合 md/cdc_md_render.js；由 md/build_md_assets.py 内联进 index.html。
+ * 配色沿用 index.html 的 :root 变量（--accent / --line / --text-dim …），8 套主题自动跟随。
+ */
+
+/* 【关键】气泡默认 white-space: pre-wrap（纯文本聊天用）。
+   Markdown 渲染出的 HTML 必须关掉它——否则源码里每个换行都会显示成一个真实空行，
+   标题 / 列表 / 代码块全被撑散，这就是"Markdown 爆掉"的主因之一。 */
+.bubble.md {
+  white-space: normal;
+  max-width: 94%;
+  line-height: 1.72;
+}
+.bubble.md > *:first-child { margin-top: 0 !important; }
+.bubble.md > *:last-child  { margin-bottom: 0 !important; }
+
+/* ---------- 基础文本 ---------- */
+.bubble.md p { margin: .42em 0; }
+.bubble.md strong { color: var(--text); font-weight: 600; }
+.bubble.md em { font-style: italic; }
+.bubble.md del { opacity: .62; }
+.bubble.md sup,
+.bubble.md sub { font-size: .78em; }
+
+/* ---------- 标题 ---------- */
+.bubble.md h1,
+.bubble.md h2,
+.bubble.md h3,
+.bubble.md h4,
+.bubble.md h5,
+.bubble.md h6 {
+  margin: .85em 0 .42em;
+  line-height: 1.35;
+  color: var(--text);
+  font-weight: 650;
+}
+.bubble.md h1 { font-size: 17px;   padding-bottom: 5px; border-bottom: 1px solid var(--line); }
+.bubble.md h2 { font-size: 15.5px; padding-bottom: 4px; border-bottom: 1px solid var(--line); }
+.bubble.md h3 { font-size: 14.5px; }
+.bubble.md h4 { font-size: 13.5px; }
+.bubble.md h5,
+.bubble.md h6 { font-size: 13px; color: var(--muted); }
+
+/* ---------- 列表 ---------- */
+.bubble.md ul,
+.bubble.md ol { margin: .42em 0; padding-left: 1.5em; }
+.bubble.md ul { list-style: disc; }
+.bubble.md ul ul { list-style: circle; }
+.bubble.md ul ul ul { list-style: square; }
+.bubble.md ol { list-style: decimal; }
+.bubble.md li { margin: .16em 0; }
+.bubble.md li > p { margin: .2em 0; }
+.bubble.md li::marker { color: var(--accent); }
+
+/* ---------- 引用 ---------- */
+.bubble.md blockquote {
+  margin: .5em 0;
+  padding: .1em .85em;
+  border-left: 3px solid var(--accent-mid);
+  background: rgba(255, 255, 255, .045);
+  border-radius: 0 8px 8px 0;
+  color: var(--muted);
+}
+.bubble.md blockquote > *:first-child { margin-top: .34em; }
+.bubble.md blockquote > *:last-child  { margin-bottom: .34em; }
+
+.bubble.md hr { border: none; border-top: 1px solid var(--line); margin: .9em 0; }
+
+/* ---------- 链接 ---------- */
+.bubble.md a {
+  color: var(--accent);
+  text-decoration: none;
+  border-bottom: 1px dashed var(--line-strong);
+}
+.bubble.md a:hover { border-bottom-style: solid; }
+
+/* ---------- 代码 ---------- */
+.bubble.md code {
+  font-family: "Cascadia Mono", "JetBrains Mono", Consolas, "Courier New", monospace;
+  font-size: 12px;
+}
+.bubble.md :not(pre) > code {
+  padding: 1.5px 5px;
+  border-radius: 5px;
+  background: rgba(255, 255, 255, .10);
+  border: 1px solid var(--line);
+  color: var(--accent);
+  word-break: break-all;
+}
+.bubble.md pre {
+  margin: .55em 0;
+  padding: 10px 13px;
+  border-radius: 10px;
+  background: rgba(0, 0, 0, .34);
+  border: 1px solid var(--line);
+  overflow-x: auto;
+  max-width: 100%;
+}
+.bubble.md pre code {
+  background: none;
+  border: none;
+  padding: 0;
+  color: var(--text-dim);
+  font-size: 12px;
+  line-height: 1.62;
+  white-space: pre;
+}
+
+/* ---------- 表格：窄气泡里横向滚动 ---------- */
+.bubble.md .md-table { margin: .55em 0; overflow-x: auto; max-width: 100%; }
+.bubble.md table { border-collapse: collapse; font-size: 12.5px; min-width: 60%; }
+.bubble.md th,
+.bubble.md td { border: 1px solid var(--line); padding: 5px 10px; text-align: left; }
+.bubble.md th { background: rgba(255, 255, 255, .07); color: var(--text); font-weight: 600; }
+.bubble.md tbody tr:nth-child(even) td { background: rgba(255, 255, 255, .025); }
+
+.bubble.md img { max-width: 100%; border-radius: 8px; }
+
+/* ---------- KaTeX ---------- */
+.bubble.md .katex { font-size: 1.04em; }
+.bubble.md .katex-display {
+  margin: .62em 0;
+  padding: 2px 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+.bubble.md .katex-error {
+  color: var(--err) !important;
+  font-family: "Cascadia Mono", Consolas, monospace;
+  font-size: 12px;
+}
+
+/* 渲染器不可用时的兜底（保留原文，不丢信息） */
+.md-fallback {
+  margin: 0;
+  white-space: pre-wrap;
+  font-family: "Cascadia Mono", Consolas, monospace;
+  font-size: 12.5px;
+  line-height: 1.65;
+  color: var(--text-dim);
+}
